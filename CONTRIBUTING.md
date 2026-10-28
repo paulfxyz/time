@@ -23,3 +23,11 @@ Do not add vendor logos, unlicensed proprietary fonts, flashing effects or remot
 Keep the bridge small and origin-checked. Test with `macos/Tests/NativeTests.swift`, build both architectures, run the real WKWebView smoke test and verify the DMG using the same scripts as CI.
 
 Release version strings in `package.json`, the native policy, Info.plist, app metadata, cache name and package filenames must stay synchronized. The test suite checks the core version markers; do not ship a mismatched website and bundle.
+
+## Update signing and releases
+
+Do not regenerate `macos/Resources/SparklePublicKey.txt` for routine releases. Installed apps pin that key, and the matching private seed is held only in the encrypted `SPARKLE_PRIVATE_KEY` repository secret.
+
+`macos/scripts/release-feed.mjs` signs and independently verifies the application ZIP, then signs and verifies the appcast. The release workflow publishes both as immutable versioned release assets; only the latest-release URL changes as newer releases appear.
+
+The updater fixture uses a temporary key and disposable application, rejects tampered feeds/archives and exercises Sparkle's real install/relaunch cycle. Never direct that fixture at a user's installed app or use the production signing key for tests.

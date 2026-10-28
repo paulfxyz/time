@@ -48,3 +48,17 @@
 - Production uses FTPS only, never the hosting panel, and touches only the Time site.
 - Verify live release marker and UI separately from local and private preview checks.
 - Share DMG and installation note; list any remaining acceptance boundary.
+
+## Version 2.1.0 additions
+- Native Check for Updates opens Sparkle's window, not a browser release page.
+- Settings exposes automatic checks and opt-in automatic download/install.
+- The update feed and archive must authenticate with the pinned Ed25519 key.
+- Invalid signed feeds fail closed; tampered archives cannot install.
+- The test-only fixture completes a real download, replacement and relaunch without touching a user installation.
+- Launch-at-login uses SMAppService, shows approval state, and remains off unless selected.
+- Window position, size and physical display identity are saved after move/resize and before update/relaunch.
+- Relaunch in a separate process restores the same placement; unplugged/rearranged monitor geometry remains reachable.
+- Turning window memory off stops recording/restoring it; reset brings the window onto the current display.
+- Scrollable Settings remains usable on a small screen and exposes the installed version.
+- Existing v2.0.0 installations require a one-time 2.1.0 DMG replacement before future in-app updates.
+- Update-signing authentication is not represented as Apple notarization.

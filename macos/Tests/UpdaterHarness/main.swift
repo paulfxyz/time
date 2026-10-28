@@ -7,7 +7,7 @@ final class Driver: NSObject, SPUUserDriver {
     let events: URL
     init(events: URL) { self.events = events }
     func log(_ event: String) {
-        let previous = (try? String(contentsOf:events)) ?? ""
+        let previous = (try? String(contentsOf:events,encoding:.utf8)) ?? ""
         try? (previous+event+"\n").write(to:events,atomically:true,encoding:.utf8)
         print(event); fflush(stdout)
     }
@@ -16,7 +16,7 @@ final class Driver: NSObject, SPUUserDriver {
         log("error:\(value.domain):\(value.code):\(value.localizedDescription)")
         DispatchQueue.main.asyncAfter(deadline:.now()+0.1) { exit(2) }
     }
-    func showUpdatePermissionRequest(_ request: SPUUpdatePermissionRequest, reply: @escaping (SUUpdatePermissionResponse) -> Void) {
+    func show(_ request: SPUUpdatePermissionRequest, reply: @escaping (SUUpdatePermissionResponse) -> Void) {
         reply(SUUpdatePermissionResponse(automaticUpdateChecks:false,sendSystemProfile:false))
     }
     func showUserInitiatedUpdateCheck(cancellation: @escaping () -> Void) { log("checking") }
