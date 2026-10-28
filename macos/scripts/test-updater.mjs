@@ -25,7 +25,7 @@ const server = createServer(async (request,response) => {
   const allowed = ['appcast.xml','update.zip'];
   const name = path.slice(1);
   if (!allowed.includes(name)) {response.writeHead(404);response.end();return}
-  try {const bytes=await readFile(root+'/'+name);response.writeHead(200,{'content-type':name.endsWith('xml')?'application/xml':'application/octet-stream','content-length':bytes.length});response.end(bytes)}
+  try {const bytes=await readFile(root+'/'+name);response.writeHead(200,{'content-type':name.endsWith('xml')?'application/xml':'application/octet-stream','content-length':bytes.length,'cache-control':'no-store'});response.end(bytes)}
   catch {response.writeHead(404);response.end()}
 });
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));

@@ -7,6 +7,7 @@ APP="$OUT/Timescreen.app"
 STAGE="$OUT/dmg-stage"
 IMAGE="$OUT/Timescreen-$VERSION-macOS-universal.dmg"
 test -d "$APP" || { echo "Build the app first."; exit 1; }
+rm -rf "$STAGE"
 mkdir -p "$STAGE/.background"
 ditto "$APP" "$STAGE/Timescreen.app"
 ln -sfn /Applications "$STAGE/Applications"

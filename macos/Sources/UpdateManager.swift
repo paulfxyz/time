@@ -40,7 +40,11 @@ final class UpdateManager: NSObject, SPUUpdaterDelegate {
         onChange?()
     }
     func updater(_ updater: SPUUpdater, didAbortWithError error: Error) {
-        status = "Could not check for updates. You can try again."
+        let problem = error as NSError
+        // Sparkle reports the normal "no update" result through its abort hook.
+        status = problem.domain == SUSparkleErrorDomain && problem.code == 1001
+            ? "You're up to date."
+            : "Could not check for updates. You can try again."
         onChange?()
     }
     func updaterWillRelaunchApplication(_ updater: SPUUpdater) { onWillRelaunch?() }

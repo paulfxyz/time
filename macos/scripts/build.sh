@@ -5,6 +5,7 @@ cd "$(dirname "$0")/../.."
 OUT="$PWD/build"
 VERSION="$(node -p 'require("./package.json").version')"
 APP="$OUT/Timescreen.app"
+rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" "$APP/Contents/Frameworks" "$OUT/AppIcon.iconset"
 test -s public/release.json || { echo "Run npm ci && npm run build first."; exit 1; }
 node macos/scripts/setup-sparkle.mjs
