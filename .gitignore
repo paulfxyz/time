@@ -20,3 +20,7 @@ __pycache__/
 build/
 dist/
 macos/.build/
+qa/screenshots/
+qa/*contact-sheet.png
+playwright-report/
+test-results/

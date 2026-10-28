@@ -367,6 +367,13 @@ export class Earth {
 
   animate(now) {
     requestAnimationFrame(next => this.animate(next));
+    // 30fps is ample for a slow clock globe, and avoids burning GPU cycles on
+    // high-refresh displays. Idle/reduced-motion scenes use a 12fps ceiling.
+    this.reducedMotion ||= matchMedia('(prefers-reduced-motion: reduce)');
+    const reduced = this.reducedMotion.matches;
+    const interval = this.dragging || this.target || (this.period && !reduced) ? 1000 / 30 : 1000 / 12;
+    if (now - (this.lastRenderFrame || 0) < interval) return;
+    this.lastRenderFrame = now;
     const elapsed = Math.min((now - this.previousFrame) / 1000, 0.05);
     this.previousFrame = now;
     if (document.hidden || this.contextLost || !this.width || !this.height) return;
@@ -375,7 +382,7 @@ export class Earth {
       this.longitude += (this.target.longitude - this.longitude) * ease;
       this.latitude += (this.target.latitude - this.latitude) * ease;
       if (Math.abs(this.target.longitude - this.longitude) < 0.04 && Math.abs(this.target.latitude - this.latitude) < 0.04) this.target = null;
-    } else if (this.period && !this.dragging && now > this.lastInteraction + 1800) {
+    } else if (this.period && !reduced && !this.dragging && now > this.lastInteraction + 1800) {
       const ramp = clamp((now - this.lastInteraction - 1800) / 1200, 0, 1);
       this.longitude += elapsed * (360 / this.period) * ramp;
     }

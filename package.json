@@ -21,6 +21,7 @@
     "lucide": "^0.468.0"
   },
   "devDependencies": {
+    "@playwright/test": "1.64.1",
     "serve": "^14.2.4",
     "sharp": "^0.35.5"
   },

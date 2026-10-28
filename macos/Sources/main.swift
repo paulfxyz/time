@@ -29,6 +29,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
     var ready = false
     var pendingScreen: NSScreen?
     var restoreFullscreenAfterMove = false
+    var fullscreenTransition = false
     var qaStarted = false
     var qaFailures: [String] = []
     var sourceReason = ""
@@ -373,7 +374,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
     @objc func quiet() { sendCommand("quiet") }
     @objc func nextStyle() { sendCommand("next") }
     @objc func previousStyle() { sendCommand("previous") }
-    @objc func toggleFullscreen(_ sender: Any?) { showWindow(nil); window.toggleFullScreen(sender) }
+    @objc func toggleFullscreen(_ sender: Any?) {
+        guard !fullscreenTransition else { return }
+        showWindow(nil)
+        fullscreenTransition = true
+        window.toggleFullScreen(sender)
+    }
     @objc func toggleOnTop() { prefs.set(!prefs.bool(forKey:"alwaysOnTop"), forKey:"alwaysOnTop"); applyWindowPreferences() }
     @objc func toggleAwake() { prefs.set(!prefs.bool(forKey:"keepAwake"), forKey:"keepAwake"); updateAwake(); sendNativeState() }
     func applyWindowPreferences() { window.level = prefs.bool(forKey:"alwaysOnTop") && !isFullscreen ? .floating : .normal }
@@ -395,8 +401,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
     func windowDidMiniaturize(_ notification: Notification) { releaseAwake(); sendNativeState() }
     func windowDidDeminiaturize(_ notification: Notification) { updateAwake() }
     func windowWillClose(_ notification: Notification) { releaseAwake() }
-    func windowDidEnterFullScreen(_ notification: Notification) { applyWindowPreferences(); sendNativeState(); updateAwake() }
+    func windowWillEnterFullScreen(_ notification: Notification) { fullscreenTransition = true }
+    func windowWillExitFullScreen(_ notification: Notification) { fullscreenTransition = true }
+    func windowDidFailToEnterFullScreen(_ window: NSWindow) { fullscreenTransition = false; sendNativeState() }
+    func windowDidFailToExitFullScreen(_ window: NSWindow) { fullscreenTransition = false; sendNativeState() }
+    func windowDidEnterFullScreen(_ notification: Notification) {
+        fullscreenTransition = false; applyWindowPreferences(); sendNativeState(); updateAwake()
+    }
     func windowDidExitFullScreen(_ notification: Notification) {
+        fullscreenTransition = false
         applyWindowPreferences(); sendNativeState()
         if let screen = pendingScreen {
             pendingScreen = nil
@@ -569,7 +582,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
         }
     }
     func qaWaitForFullscreen(_ expected: Bool, attempts: Int, done: @escaping () -> Void) {
-        if isFullscreen == expected { done(); return }
+        if !fullscreenTransition && isFullscreen == expected { done(); return }
         guard attempts > 0 else { qaFailures.append("Native fullscreen transition failed"); finishQA([]); return }
         DispatchQueue.main.asyncAfter(deadline:.now()+0.2) { self.qaWaitForFullscreen(expected, attempts:attempts-1, done:done) }
     }

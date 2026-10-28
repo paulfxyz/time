@@ -35,7 +35,7 @@ let wakeLock = null;
 let awakeRequested = false;
 let solarCache = null;
 let lastSecond = '';
-let lastModeManual = Boolean(new URLSearchParams(location.hash.slice(1)).get('mode'));
+let lastModeManual = Boolean(new URLSearchParams(location.hash.slice(1) || storedSetup()).get('mode'));
 let sceneCategory = 'All';
 let nativeFullscreen = false;
 const isNative = Boolean(window.timescreenNative?.available);
@@ -59,10 +59,17 @@ function validZone(zone) {
   try { new Intl.DateTimeFormat('en', { timeZone: zone }).format(); return true; } catch { return false; }
 }
 
-function loadState(query = location.hash.slice(1)) {
+function storedSetup() {
+  try { return localStorage.getItem('timescreen:setup:v2') || ''; } catch { return ''; }
+}
+function loadState(query = location.hash.slice(1) || storedSetup()) {
   const params = new URLSearchParams(query);
   const value = { ...defaults };
-  if (SCENES.some(s => s.id === params.get('scene'))) Object.assign(value, sceneSettings(params.get('scene')));
+  if (SCENES.some(s => s.id === params.get('scene'))) {
+    Object.assign(value, sceneSettings(params.get('scene')));
+    const sceneTheme = THEMES.find(t => t.id === value.theme);
+    value.pattern = sceneTheme.pattern; value.finish = sceneTheme.style;
+  }
   const theme = THEMES.find(t => t.id === params.get('theme'));
   if (theme) { value.theme = theme.id; value.pattern = theme.pattern; value.finish = theme.style; }
   if (['light', 'dark'].includes(params.get('mode'))) value.mode = params.get('mode');
@@ -99,6 +106,7 @@ function serializeState() {
 
 function saveState() {
   try { history.replaceState(null, '', `#${serializeState()}`); } catch {}
+  try { localStorage.setItem('timescreen:setup:v2', serializeState()); } catch {}
   postNative('saveSetup', serializeState());
 }
 
@@ -951,6 +959,17 @@ window.addEventListener('resize', () => {
   if (resizeScheduled) return;
   resizeScheduled = true;
   requestAnimationFrame(() => { drawBackground(); resizeScheduled = false; });
+});
+window.addEventListener('hashchange', () => {
+  // Anchor navigation must never reset a saved setup.
+  if (!location.hash.includes('=')) return;
+  state = loadState(location.hash.slice(1));
+  selectedCity = resolveCity(state.city, state.timezone);
+  solarCache = null; lastSecond = '';
+  applyAppearance();
+  tick();
+  if (selectedCity.lat !== null) earth.recenter(selectedCity, reducedMotion.matches);
+  saveState();
 });
 setInterval(tick, 200);
 syncFullscreenControl();

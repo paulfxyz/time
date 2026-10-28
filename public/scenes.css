@@ -44,7 +44,8 @@
 [data-clock="flap"] .clock-colon { font-size: .55em; }
 [data-clock="nixie"] .clock { color: var(--color-primary); font-weight: 300; font-size: calc(var(--text-clock) * .84); text-shadow: 0 0 .02em var(--color-primary), 0 0 .16em color-mix(in srgb, var(--color-primary) 55%, transparent); }
 [data-clock="nixie"] #clock-hours, [data-clock="nixie"] #clock-minutes { padding: 0 .08em; border: 1px solid var(--color-border); border-radius: .14em .14em .06em .06em; box-shadow: inset .02em 0 .1em #ffffff0a; background: linear-gradient(90deg, transparent, #ffffff05, transparent); }
-[data-clock="pixel"] .clock { font-size: calc(var(--text-clock) * .86); font-weight: 700; text-shadow: .025em .025em 0 color-mix(in srgb, var(--color-primary) 28%, transparent); letter-spacing: -.07em; color: var(--color-primary); }
+[data-clock="pixel"] .clock { font-size: calc(var(--text-clock) * .86); font-weight: 700; text-shadow: none; letter-spacing: -.07em; color: var(--color-primary); }
+[data-clock="pixel"] #clock-hours, [data-clock="pixel"] #clock-minutes { color: transparent; background: radial-gradient(circle, var(--color-primary) 1.5px, transparent 1.65px); background-size: 4px 4px; -webkit-background-clip: text; background-clip: text; }
 [data-clock="chrome"] .clock > :not(.clock-tail) { color: #e0e5ee; background: linear-gradient(180deg, #fff 10%, #a4b2c7 38%, #eef5ff 47%, #657486 50%, #fff 68%, #9fadc3 88%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font-weight: 700; }
 
 /* Center compositions keep a real, small interactive planet as a secondary
