@@ -1,10 +1,10 @@
-import { THEMES, PATTERNS, FINISHES, CITIES } from './themes.js';
-import { sunPosition, solarElevation, solarPhase, sunTimes, zonedParts, clamp } from './solar.js';
-import { Earth } from './earth.js';
-import { renderIcons, setIcon } from './icons.js';
-import { PICTURE_DEFAULTS, PICTURE_LIMITS, PICTURE_PRESETS, normalizePicture, pictureFilter, matchingPicturePreset } from './picture.js';
-import { SCENES, SCENE_CATEGORIES, getScene, sceneMatches, sceneSettings } from './scenes.js';
-import { Ambient } from './ambient.js';
+import { THEMES, PATTERNS, FINISHES, CITIES } from './themes.js?v=2.0.0';
+import { sunPosition, solarElevation, solarPhase, sunTimes, zonedParts, clamp } from './solar.js?v=2.0.0';
+import { Earth } from './earth.js?v=2.0.0';
+import { renderIcons, setIcon } from './icons.js?v=2.0.0';
+import { PICTURE_DEFAULTS, PICTURE_LIMITS, PICTURE_PRESETS, normalizePicture, pictureFilter, matchingPicturePreset } from './picture.js?v=2.0.0';
+import { SCENES, SCENE_CATEGORIES, getScene, sceneMatches, sceneSettings } from './scenes.js?v=2.0.0';
+import { Ambient } from './ambient.js?v=2.0.0';
 
 const $ = selector => document.querySelector(selector);
 const root = document.documentElement;
@@ -976,7 +976,7 @@ syncFullscreenControl();
 
 if (!isNative && 'serviceWorker' in navigator && window.isSecureContext && window.self === window.top) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register(new URL('./sw.js', import.meta.url).href)
+    navigator.serviceWorker.register(new URL('./sw.js', import.meta.url).href, { updateViaCache:'none' })
       .catch(() => {}); // A restricted preview must remain usable without offline caching.
   }, { once: true });
 }

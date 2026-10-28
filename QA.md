@@ -9,6 +9,7 @@ Verified on 28 October 2026. The HTML5 clock is tested independently of the nati
 - **Scene render review:** all 28 scenes captured and visually inspected at 1440×900 and 375×812, with no detected document overflow, clipped clock digits or page exceptions.
 - **Additional layouts:** 48 sampled layouts across 1920×576, 1080×1920, 540×1800, 1024×480, 420×438 and 320×568. A cramped centred-clock layout was corrected and 10 small-window cases were rechecked; very narrow world clocks use a separate metadata row.
 - **Offline web:** a previously cached clock reloads without network access, including its textured WebGL Earth and selected style.
+- **Returning visitors:** first-party JavaScript and CSS URLs carry the release version, and the service worker caches those same versioned URLs; this prevents a fresh HTML document from being paired with a previously cached script.
 - **Reduced motion:** both the ambient canvas and Earth viewpoint remain still even when a saved setup requests an orbit.
 - **Failure recovery:** forced WebGL unavailability uses the geographic Canvas renderer; denied clipboard access exposes a selectable setup code; denied fullscreen shows guidance and exits cleanly.
 - **Native trust tests:** 25 passing Swift assertions for allowed origins, external links, size-limited setup data, resource paths, traversal rejection and safe JSON dispatch.

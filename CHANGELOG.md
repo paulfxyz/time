@@ -9,6 +9,7 @@
 - Added 13 procedural ambient treatments plus no-effect scenes, with reduced-motion and hidden-page handling; capped globe rendering on high-refresh displays.
 - Added SIL-licensed monospace/editorial clock faces, split-flap panels, Nixie glow, outlined neon, chrome and dot-matrix treatments.
 - Added local web preference persistence and same-page setup-fragment navigation while preserving legacy setup codes.
+- Versioned all first-party script and stylesheet URLs so returning visitors receive the new gallery even when old browser assets are still cached.
 - Added native origin/path-policy tests, a real WKWebView/fullscreen smoke test, universal-build checks, DMG verification and reproducible browser interaction QA.
 - Refreshed the public showcase, README, install/security notes, release packaging and repository topics.
 - Updated the HTML5 deployment through the approved, hash-guarded FTPS path; unrelated hosted sites remain out of scope.

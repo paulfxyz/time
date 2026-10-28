@@ -54,6 +54,8 @@ test('web and native releases declare the same version', () => {
   assert.ok(native.includes(`static let version = "${pkg.version}"`));
   assert.ok(html.includes(`name="timescreen-version" content="${pkg.version}"`));
   assert.ok(app.includes(`version:'${pkg.version}'`));
+  assert.ok(html.includes(`src="./app.js?v=${pkg.version}"`));
+  assert.ok(html.includes(`href="./scenes.css?v=${pkg.version}"`));
 });
 test('native bridges are opt-in and browser permissions remain available', () => {
   const app = readFileSync(new URL('../public/app.js', import.meta.url),'utf8');

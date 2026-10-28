@@ -1,5 +1,10 @@
 const CACHE_NAME = 'time-2.0.0';
 const BASE = new URL('./', self.location).href;
+const assetURL = path => {
+  const url = new URL(path, BASE);
+  if (/\.(js|css)$/.test(url.pathname)) url.searchParams.set('v', '2.0.0');
+  return url.href;
+};
 const SHELL = [
   './', './index.html', './style.css', './scenes.css', './scenes.js', './ambient.js', './app.js', './picture.js', './themes.js',
   './earth.js', './solar.js', './icons.js', './manifest.webmanifest', './favicon.svg',
@@ -11,7 +16,7 @@ const SHELL = [
 ];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache =>
-    cache.addAll(SHELL.map(path => new URL(path, BASE).href))).then(() => self.skipWaiting()));
+    cache.addAll(SHELL.map(assetURL))).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', event => {
   event.waitUntil(caches.keys().then(keys => Promise.all(
