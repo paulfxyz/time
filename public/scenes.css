@@ -228,3 +228,23 @@
   .scene-name, .scene-description { padding-inline: var(--space-1); }
   .scene-current { padding-inline: 0; }
 }
+@media (max-height: 620px) and (max-aspect-ratio: 1/1) {
+  [data-composition="center"] .scene-caption { display: none; }
+  [data-composition="center"] .clock { font-size: clamp(2.75rem, min(18vw, 15dvh), 6rem); margin-block: var(--space-2); }
+  [data-composition="center"] .clock-panel { padding: var(--space-2); }
+  [data-composition="center"] .stage { grid-template-rows: minmax(0, 1fr) 70px; }
+  [data-composition="center"] .earth-panel { width: 100px; }
+  [data-composition="center"] .city-button { min-height: 30px; }
+  [data-composition="center"] .date-line { margin-top: var(--space-2); padding-block: var(--space-1); }
+  [data-scene="cupertino"] .clock-panel { padding: var(--space-3) var(--space-2); border-radius: 20px; }
+}
+@media (max-height: 560px) and (max-aspect-ratio: 1/1) {
+  [data-composition="center"] .stage { grid-template-rows: minmax(0, 1fr); }
+  [data-composition="center"] .earth-panel { display: none; }
+}
+@media (max-width: 360px) {
+  .world-city { grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--space-1); }
+  .world-name { font-size: 10px; gap: 2px; }
+  .world-time { grid-row: 1; font-size: 18px; }
+  .world-meta { grid-column: 1 / -1; grid-row: 2; font-size: 10px; }
+}

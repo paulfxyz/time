@@ -1,6 +1,51 @@
 # Install Timescreen
 
-Timescreen is an HTML5 page, not a background service or a native screensaver. Open it in a browser, move that browser to your spare display, and enter fullscreen.
+Timescreen is available as a native Swift macOS application and a standalone HTML5 clock. Both share the same styles and display controls; it is not a macOS `.saver` plugin.
+
+## Install the Mac app
+
+1. Download `Timescreen-2.0.0-macOS-universal.dmg` from the [official releases](https://github.com/paulfxyz/timescreen/releases/latest).
+2. Open the DMG and drag **Timescreen** to **Applications**.
+3. Eject the installer, then open Timescreen from Applications or Spotlight.
+4. Choose a style in Appearance and use `Control` + `Command` + `F` for native fullscreen.
+
+The universal app requires macOS 13 or newer and runs on Apple silicon and Intel. No Node.js, separate browser or runtime installation is needed.
+
+### First-launch security
+
+This build is ad-hoc signed, not Apple-notarized. macOS can block the first launch because it is not signed with a Developer ID certificate.
+
+If you trust the official release, attempt to open it, then visit **System Settings → Privacy & Security → Open Anyway**, and confirm Open. [Apple documents this exception process](https://support.apple.com/en-us/102445); managed Macs can restrict it, and you should never disable Gatekeeper globally.
+
+`SHA256SUMS.txt` accompanies the release. To check an installer in Downloads, compare its digest with that file:
+
+```sh
+shasum -a 256 ~/Downloads/Timescreen-2.0.0-macOS-universal.dmg
+```
+
+### Make it easy to open
+
+- **Dock or Spotlight:** keep the application in your Dock, or search for Timescreen.
+- **Menu bar:** the clock icon stays available when the window is closed; Command-Q quits the app.
+- **Login:** enable Settings → Open Timescreen at login only if wanted, after moving it to Applications.
+- **Fullscreen at launch:** enable it in Settings; the website and native menu fullscreen controls both use native Mac fullscreen.
+- **Another monitor:** choose Window → Move to Display.
+- **Always on top / keep awake:** optional View-menu controls; the display sleep assertion releases when the clock is hidden, minimised, closed or quit.
+
+The native app automatically opens `https://time.paulfleury.com`. If the site is unavailable or older than the app, it opens its complete built-in copy; the View menu shows the active source and provides **Reload Live Site** and **Use Built-in Offline Version**.
+
+Your setup and window position are saved locally. To update, quit Timescreen and replace the application with the newer official download; Check for Updates opens the release page, without silently installing anything.
+
+### Build the native app
+
+After the source/web setup below, on a Mac with Xcode Command Line Tools:
+
+```sh
+npm run build:mac
+npm run build:dmg
+```
+
+The scripts compile arm64 and x86_64, combine them with `lipo`, bundle the offline clock, ad-hoc sign the app and create a verified drag-to-install DMG. Build products appear in `build/`.
 
 ## From source
 

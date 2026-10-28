@@ -126,7 +126,7 @@ export async function runWebQA(page, base = 'http://127.0.0.1:3000') {
   return { passed:true, count:checks.length, checks, errors };
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (typeof process !== 'undefined' && process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const { chromium } = await import('playwright');
   const browser = await chromium.launch({headless:true});
   try {

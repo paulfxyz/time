@@ -1,6 +1,14 @@
 # Deployment
 
-The production hostname is `https://time.paulfleury.com`. Its dedicated FTP account must be scoped to this site's document root, not a parent directory containing other websites.
+The production hostname is `https://time.paulfleury.com`. Prefer a dedicated FTP account scoped to this site's document root; an operator using a broader existing hosting account must first verify the exact Time root against independently checked public file hashes.
+
+## Guarded operator deployment
+
+The deployer accepts `EXPECTED_INDEX_SHA256` and `EXPECTED_RELEASE_SHA256` environment variables. When set, it verifies both before staging and again before activation, and stops if either file changed.
+
+Do not derive a baseline hash from an HTTP 200 response without checking its content. Hosting bot checks can return a small HTML challenge with a success status; compare a real browser response with the intended source and use an inspect-only FTPS pass before publishing.
+
+The approved production path can run from the operator's private hosting repository without copying its credential into this public repository. It checks out an immutable Timescreen commit and only writes to the hash-verified Time document root.
 
 ## GitHub configuration
 

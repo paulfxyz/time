@@ -37,6 +37,14 @@ jobs:
             process.exit(run.status ?? 1);'
       - name: Create and verify drag-to-install DMG
         run: npm run build:dmg
+      - name: Verify live-first startup on releases
+        if: startsWith(github.ref, 'refs/tags/v2.')
+        run: |
+          node --input-type=module -e '
+            import {spawnSync} from "node:child_process";
+            const run = spawnSync("build/Timescreen.app/Contents/MacOS/Timescreen", ["--smoke-test", process.cwd()+"/build/verification-live", "--live-site"], {timeout:100000,stdio:"inherit"});
+            if (run.error) throw run.error;
+            process.exit(run.status ?? 1);'
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
@@ -46,6 +54,7 @@ jobs:
             build/Timescreen-2.0.0-macOS-universal.zip
             build/SHA256SUMS.txt
             build/verification/
+            build/verification-live/
           if-no-files-found: warn
           retention-days: 30
   release:

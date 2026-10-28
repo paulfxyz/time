@@ -1,5 +1,51 @@
 # Timescreen QA inventory
 
+## Version 2.0.0
+
+Verified on 28 October 2026. The HTML5 clock is tested independently of the native host; native checks run in a real macOS WKWebView, not an Electron mock.
+
+- **Model/configuration tests:** 22 passing Node tests covering time zones, solar calculations, scene metadata, version alignment, picture controls and offline assets.
+- **Interactive browser checks:** 47 passing assertions in `tools/qa-web.mjs`, covering style search, combined filters, shuffle, independent colours, display toggles, all six Earth finishes, city search, picture presets, keyboard input, persistence, legacy setup restoration and fullscreen.
+- **Scene render review:** all 28 scenes captured and visually inspected at 1440×900 and 375×812, with no detected document overflow, clipped clock digits or page exceptions.
+- **Additional layouts:** 48 sampled layouts across 1920×576, 1080×1920, 540×1800, 1024×480, 420×438 and 320×568. A cramped centred-clock layout was corrected and 10 small-window cases were rechecked; very narrow world clocks use a separate metadata row.
+- **Offline web:** a previously cached clock reloads without network access, including its textured WebGL Earth and selected style.
+- **Reduced motion:** both the ambient canvas and Earth viewpoint remain still even when a saved setup requests an orbit.
+- **Failure recovery:** forced WebGL unavailability uses the geographic Canvas renderer; denied clipboard access exposes a selectable setup code; denied fullscreen shows guidance and exits cleanly.
+- **Native trust tests:** 25 passing Swift assertions for allowed origins, external links, size-limited setup data, resource paths, traversal rejection and safe JSON dispatch.
+- **Native application:** both arm64 and x86_64 compile successfully. The macOS runner renders Matrix, Cupertino and Spectrum in the bundled WKWebView, validates saved setup messages, and enters/exits actual native fullscreen.
+- **Installer:** the application signature passes `codesign --verify --deep --strict`; `lipo` verifies both slices. The DMG is created, checksum-verified, mounted read-only, and checked for the app, intact binary and Applications link.
+- **Dependency audit:** no known vulnerabilities reported by the checked lockfile's `npm audit`.
+
+The native fullscreen test originally exposed an asynchronous entry/exit race. The application now gates overlapping transitions and the test waits for native completion rather than only checking the early window style flag.
+
+### Reproduce the checks
+
+```sh
+npm ci
+npm run build
+npm test
+npm start
+# In another terminal:
+npx playwright install chromium
+node tools/qa-web.mjs
+```
+
+On macOS, build the app and run its actual native smoke mode:
+
+```sh
+npm run build:mac
+build/Timescreen.app/Contents/MacOS/Timescreen --smoke-test "$PWD/build/verification"
+npm run build:dmg
+```
+
+The smoke run uses isolated preferences and non-persistent WebKit storage. Adding `--live-site` tests the live-first startup path and records whether it used the live site or a declared fallback.
+
+### Acceptance boundaries
+
+The universal binary is built for both processor families, but that is not a claim of hands-on execution on every Intel and Apple silicon Mac. Physical multi-monitor transitions, user-specific login-item approval, managed-Mac policy, Gatekeeper first-open and long-running display behaviour still need acceptance on the destination Mac.
+
+The release is ad-hoc signed and deliberately documented as not notarized. Native smoke checks do not waive the user's first-launch security approval.
+
 ## Required experience
 
 - Real local time advances, uses the device clock, supports city selection and DST-aware IANA zones.

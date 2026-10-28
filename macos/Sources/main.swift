@@ -63,7 +63,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
             name: NSApplication.didChangeScreenParametersNotification, object: nil)
         showWindow(nil)
         if smokeDirectory != nil {
-            loadBundled("Native verification")
+            if CommandLine.arguments.contains("--live-site") { loadLive(nil) }
+            else { loadBundled("Native verification") }
             DispatchQueue.main.asyncAfter(deadline: .now() + 85) { [weak self] in
                 guard let self = self else { return }
                 self.finishQA(["Native test timed out"])
@@ -590,7 +591,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
         guard let directory = smokeDirectory else { return }
         let failures = qaFailures + extra
         let report: [String:Any] = ["version":NativePolicy.version, "passed":failures.isEmpty,
-            "failures":failures, "source":source, "engine":"real macOS WKWebView",
+            "failures":failures, "source":source, "sourceReason":sourceReason, "engine":"real macOS WKWebView",
             "checks":["bundled offline load","28 style cards","3 style renders","native bridge","setup persistence","native fullscreen round trip"]]
         try? FileManager.default.createDirectory(atPath:directory, withIntermediateDirectories:true)
         try? NativePolicy.json(report).write(toFile:directory+"/native-smoke.json", atomically:true, encoding:.utf8)
