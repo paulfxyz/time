@@ -1,30 +1,30 @@
-# Timescreen 2.0.0
+# Timescreen 2.1.0
 
-Your spare screen now has a native home on macOS. Timescreen opens the live website automatically and includes a complete offline copy, with 28 distinct scene designs and the existing 60 light/dark colour palettes.
+This release makes Timescreen easier to keep current and brings the clock back where you left it. The 28 styles and 60 colour palettes remain unchanged.
 
-## Get the Mac app
+## New in 2.1.0
 
-Download **Timescreen-2.0.0-macOS-universal.dmg**, open it, and drag Timescreen into Applications. The same app runs on Apple silicon and Intel Macs with macOS 13 or newer.
+- **Check for Updates:** a real native update window replaces the browser link. Find it in the Timescreen menu, menu-bar launcher or Settings.
+- **Automatic updates:** enable “Automatically download and install updates” in Settings. Sparkle downloads verified updates in the background and completes installation when the app quits, or you can choose Install and Relaunch.
+- **Signed distribution:** both the update feed and update archives are Ed25519-signed and checked against the app's pinned key. Invalid feeds are not allowed to fail open, and archives are checked before extraction.
+- **Launch at login:** the dedicated setting uses macOS Login Items and shows whether it is enabled or waiting for system approval.
+- **Remember position, size and display:** enabled by default, with explicit controls and a reset action. Moving the window, resizing it, changing monitor arrangement or disconnecting a monitor no longer leaves it inaccessible.
+- **Clearer settings:** a native, scrollable Settings window groups updates, startup and display controls and shows the installed version.
 
-This build is **ad-hoc signed, not Apple-notarized**. If macOS blocks the first launch, use System Settings → Privacy & Security → Open Anyway after attempting to open it. Only proceed if you trust the official download; do not disable Gatekeeper globally.
+Automatic checks are enabled by default, with a six-hour interval. Automatic download/install and launch at login remain opt-in; no system profile is sent.
 
-## New in this release
+## Install once to enable future in-app updates
 
-- **A native Mac window:** AppKit, WKWebView, native fullscreen, menu-bar launcher and remembered window position.
-- **Made for multiple monitors:** move to another display, always-on-top, optional start-in-fullscreen and optional display wake lock.
-- **Offline from the first launch:** bundled application resources, with no Node, Electron runtime or local web server.
-- **28 scene designs:** Matrix, Cupertino, Spectrum, Split-flap, Terminal, Swiss, Bauhaus, Tokyo neon, Outrun, Nixie, Blueprint, Sonar, Mission control, Eclipse, Aurora, Liquid chrome, Candy, Memphis, Mondrian, Noir, Sunday paper, Zen, Deep ocean, Forest, Desert, Solar flare, Pixel arcade and the original Observatory.
-- **Independent colour control:** each scene works with all 60 paired palettes, picture controls and portable setup codes.
-- **A searchable gallery:** category filters, illustrated previews, shuffle, and previous/next style shortcuts.
-- **Considerate motion:** bounded ambient animation, reduced-motion support and hidden-page suspension.
-- **Preserved essentials:** accurate IANA clocks, calculated sunlight, Earth navigation, city search and portrait/panoramic layouts.
+Users of 2.0.0 need to download **Timescreen-2.1.0-macOS-universal.dmg**, quit the old app and replace it in Applications. Version 2.0.0 did not include an installer/updater, so it cannot install this first updater-enabled release by itself.
 
-## Important details
+The universal app supports Apple silicon and Intel on macOS 13 or newer. Existing settings are retained, and the old window-position preference is migrated when possible.
 
-Cupertino and Spectrum are independent visual tributes, not Apple or Google products. Sunrise/sunset values are estimates, and Earth imagery is a static composite rather than a live camera feed.
+This app is **ad-hoc signed, not Apple-notarized**. Signed update files do not turn the app into an Apple-notarized application; if macOS blocks first launch, follow [Apple's per-app Open Anyway instructions](https://support.apple.com/en-us/102445) only if you trust the official download.
 
-View shows whether the live website or built-in copy is active. If the site is unavailable or older than the app, the newer built-in version opens automatically; Reload Live Site retries it.
+## Settings to use
 
-Check for Updates opens the official releases page. There is no silent binary updater, telemetry, account requirement, or automatic login registration.
+Open Timescreen → Settings, or press Command-comma. Enable automatic updates and launch at login if desired; “Remember window position, size and display” is already on.
 
-See [the installation guide](https://github.com/paulfxyz/timescreen/blob/main/INSTALL.md) and [verification notes](https://github.com/paulfxyz/timescreen/blob/main/QA.md) for the tested scope and remaining personal-device checks.
+Native fullscreen and all clock controls remain available. Closing the clock window leaves the menu-bar launcher running, while Command-Q quits and allows a downloaded automatic update to install.
+
+See [installation instructions](https://github.com/paulfxyz/timescreen/blob/main/INSTALL.md), [security details](https://github.com/paulfxyz/timescreen/blob/main/SECURITY.md), and the [verification scope](https://github.com/paulfxyz/timescreen/blob/main/QA.md).

@@ -40,9 +40,17 @@ Download the universal DMG, drag Timescreen into Applications, and open it. No a
 - **Your display, your rules:** move to another monitor, float above other windows, open in fullscreen, or keep the display awake while the clock is visible.
 - **Live by default, offline when needed:** automatically loads `https://time.paulfleury.com`; a complete bundled copy takes over if the website is unavailable or older than the app.
 - **A remembered setup:** style, colour, city, picture controls and window position survive relaunch.
+- **Updates that stay in the app:** check now, or opt into automatic download/install. A pinned Ed25519 key verifies both the update feed and the application archive.
+- **More reliable window memory:** remember position, size and physical display, recover safely when a display disappears, or reset the saved placement in Settings.
 - **No Electron:** the clock runs in Apple's WKWebView. There is no bundled Chromium runtime, local web server or JavaScript-to-shell execution.
 
 > **First launch:** this open-source build is ad-hoc signed, not Apple-notarized. If macOS blocks it, attempt to open it, then use System Settings → Privacy & Security → Open Anyway only if you trust the official download. See [Apple's guidance](https://support.apple.com/en-us/102445) and [our installation guide](INSTALL.md); never disable Gatekeeper globally.
+
+### New in 2.1.0
+
+Timescreen → Settings now groups **Updates**, **Startup and window**, and **Display and access**. Automatic checks run every six hours by default; automatic downloading/installing and launch at login are optional, while window position/size/display memory is on by default.
+
+Version 2.0.0 users install the 2.1.0 DMG once to gain the updater. After that, Check for Updates can download, install and relaunch newer releases without another browser-based download; automatic installs finish when the application quits.
 
 ## A style for every mood
 
@@ -130,7 +138,7 @@ On a Mac, after the web build:
 npm run build:mac
 npm run build:dmg
 # build/Timescreen.app
-# build/Timescreen-2.0.0-macOS-universal.dmg
+# build/Timescreen-2.1.0-macOS-universal.dmg
 ```
 
 The build verifies pinned upstream hashes for the separately licensed Earth textures and Satoshi font. JetBrains Mono and Instrument Serif are included under the SIL Open Font License; see [asset notices](docs/ASSETS.md).
@@ -152,7 +160,8 @@ tools/qa-web.mjs        Reproducible browser interaction checks
 ```text
 Swift / AppKit
   ├─ native menus, fullscreen, displays, login preference, display sleep
-  ├─ saved window + setup
+  ├─ saved window + setup + physical display identity
+  ├─ Sparkle updater: pinned signed feed + signed update archive
   └─ WKWebView
        ├─ https://time.paulfleury.com        live, automatically on launch
        └─ timescreen://app/index.html       bundled offline fallback
@@ -169,7 +178,7 @@ Physical multi-monitor arrangements, managed-Mac Gatekeeper policy and login-ite
 
 ## Privacy, licensing and credits
 
-No analytics, account, cloud settings database, location permission, microphone or camera access is required. The live site and manual update links make ordinary HTTPS requests; the clock, saved settings and solar calculations run locally.
+No analytics, account, cloud settings database, location permission, microphone or camera access is required. The live site and enabled update checks make ordinary HTTPS requests; the clock, saved settings and solar calculations run locally, and the updater sends no system profile.
 
 Original application code is [MIT-licensed](LICENSE). Third-party imagery, fonts and icons keep their own licences; [asset attribution](docs/ASSETS.md) and [security notes](SECURITY.md) explain the details.
 

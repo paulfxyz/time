@@ -4,7 +4,7 @@ Timescreen is available as a native Swift macOS application and a standalone HTM
 
 ## Install the Mac app
 
-1. Download `Timescreen-2.0.0-macOS-universal.dmg` from the [official releases](https://github.com/paulfxyz/timescreen/releases/latest).
+1. Download `Timescreen-2.1.0-macOS-universal.dmg` from the [official releases](https://github.com/paulfxyz/timescreen/releases/latest).
 2. Open the DMG and drag **Timescreen** to **Applications**.
 3. Eject the installer, then open Timescreen from Applications or Spotlight.
 4. Choose a style in Appearance and use `Control` + `Command` + `F` for native fullscreen.
@@ -20,21 +20,33 @@ If you trust the official release, attempt to open it, then visit **System Setti
 `SHA256SUMS.txt` accompanies the release. To check an installer in Downloads, compare its digest with that file:
 
 ```sh
-shasum -a 256 ~/Downloads/Timescreen-2.0.0-macOS-universal.dmg
+shasum -a 256 ~/Downloads/Timescreen-2.1.0-macOS-universal.dmg
 ```
 
 ### Make it easy to open
 
 - **Dock or Spotlight:** keep the application in your Dock, or search for Timescreen.
 - **Menu bar:** the clock icon stays available when the window is closed; Command-Q quits the app.
-- **Login:** enable Settings → Open Timescreen at login only if wanted, after moving it to Applications.
+- **Login:** enable Settings → Launch Timescreen when I log in only if wanted, after moving it to Applications. A status line reports whether macOS needs your approval.
 - **Fullscreen at launch:** enable it in Settings; the website and native menu fullscreen controls both use native Mac fullscreen.
 - **Another monitor:** choose Window → Move to Display.
 - **Always on top / keep awake:** optional View-menu controls; the display sleep assertion releases when the clock is hidden, minimised, closed or quit.
 
 The native app automatically opens `https://time.paulfleury.com`. If the site is unavailable or older than the app, it opens its complete built-in copy; the View menu shows the active source and provides **Reload Live Site** and **Use Built-in Offline Version**.
 
-Your setup and window position are saved locally. To update, quit Timescreen and replace the application with the newer official download; Check for Updates opens the release page, without silently installing anything.
+Your setup is saved locally. **Remember window position, size and display** is on by default, preserves the same monitor after rearrangement, and safely falls back to an available display when the original is disconnected; Settings also offers a reset action.
+
+### Check for updates and enable automatic updates
+
+Choose **Timescreen → Check for Updates**, the same item in the menu-bar launcher, or the button in Settings. The native Sparkle window checks the signed release feed, offers a newer version when available and can download, install and relaunch it.
+
+Automatic checks are enabled by default and run every six hours. In Settings → Updates, enable **Automatically download and install updates** to download verified updates in the background and finish installation when the app quits; you can instead install and relaunch immediately from the update window.
+
+Both the feed and the update archive must pass Ed25519 signature verification against the key embedded in the app. Automatic installation remains off until you opt in, and no system profile is sent.
+
+### Upgrade from 2.0.0
+
+Install the 2.1.0 DMG once, replacing the old app after quitting it. The 2.0.0 release only opened a download page and cannot install this first updater-enabled version by itself; settings are retained when the app is replaced.
 
 ### Build the native app
 

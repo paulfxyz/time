@@ -33,6 +33,12 @@ The Mac bundle embeds Satoshi solely to render this app's fixed interface, as pe
 
 Procedural ambient effects and scene compositions are original project code. Cupertino and Spectrum are independent design tributes; no Apple or Google logos, proprietary typefaces, or affiliation claims are included.
 
+## Native update framework
+
+The native Mac app embeds [Sparkle 2.10.1](https://github.com/sparkle-project/Sparkle/releases/tag/2.10.1), distributed under its BSD-style license and bundled third-party notices. The verified upstream framework is downloaded during the native build, and `Sparkle-LICENSE.txt` is included in the app's Resources.
+
+The distribution archive is pinned to SHA-256 `1a856d2a9edb8e628de88121d7be04cf0e2167f8641650b78fca00b14244cf27`. Sparkle's upstream code signature is preserved inside the ad-hoc-signed Timescreen bundle.
+
 ## Solar calculations
 
 The solar model implements the compact equations in [NOAA General Solar Position Calculations](https://www.gml.noaa.gov/grad/solcalc/solareqns.PDF). Computed illumination and sunrise/sunset are estimates, not navigation, weather, or legal-event predictions.

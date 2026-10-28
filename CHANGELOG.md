@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.1.0 · 2026-10-28
+
+- Replaced the browser-only update link with a native Sparkle update window, available in the application menu, menu-bar launcher and Settings.
+- Added automatic checks and opt-in automatic downloading/installing, with installation on quit or explicit Install and Relaunch.
+- Added mandatory Ed25519 signatures for update feeds and archives, pre-extraction validation, an encrypted release-signing secret, and a checksum-pinned Sparkle framework.
+- Added explicit window-memory controls using physical display identity, position and size, monitor-disconnect recovery, and a reset action.
+- Made launch-at-login approval/status visible and grouped native Settings into updates, startup/window and display/access.
+- Added cross-process window restoration checks and updater verification fixtures; retained all 28 scenes and 60 palettes.
+- Kept web compatibility separate from native versioning so a native-only update does not unnecessarily reject a compatible live clock.
+
 ## 2.0.0 · 2026-10-28
 
 - Added a universal native Swift/AppKit macOS app with a WKWebView clock, native fullscreen, window restoration, menu-bar launcher and display selection.

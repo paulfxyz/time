@@ -16,7 +16,7 @@ Do not disable Gatekeeper globally.
 QUICK ACCESS
 Keep the app in your Dock, open it with Spotlight, or use its menu-bar clock.
 Closing the window keeps the launcher running. Command-Q quits completely.
-Settings > Open Timescreen at login is optional and off by default.
+Settings > Launch Timescreen when I log in is optional and off by default.
 
 DISPLAY
 Control-Command-F or the on-screen fullscreen button: native fullscreen.
@@ -25,6 +25,8 @@ Command-[ and Command-]: previous / next style.
 Window > Move to Display: choose a monitor.
 View > Always on Top / Keep Screen Awake: optional.
 Settings > Open in full screen: remember your preferred launch mode.
+Settings > Remember window position, size and display: enabled by default.
+If a monitor is disconnected, the app recovers on an available display.
 
 ONLINE AND OFFLINE
 The app automatically opens https://time.paulfleury.com.
@@ -34,9 +36,16 @@ View > Reload Live Site retries the live website.
 Both versions share your native saved setup. No account is required.
 
 UPDATES
-Timescreen > Check for Updates opens the official GitHub releases.
-Replace the app in Applications after quitting it. Settings are retained.
-No silent binary updates, background analytics, or auto-start without consent.
+Timescreen > Check for Updates opens the native updater.
+Settings > Automatically check for updates: on by default, every six hours.
+Settings > Automatically download and install updates: optional, off by default.
+Automatic installs finish when the app quits, or use Install and Relaunch.
+Both the feed and the update archive require valid Ed25519 signatures.
+No analytics, system-profile reporting, or auto-start without consent.
+
+UPGRADING FROM 2.0.0
+Install this 2.1.0 DMG once to gain the in-app updater.
+Quit the old version and replace it in Applications; settings are retained.
 
 REQUIREMENTS
 macOS 13 Ventura or newer. Universal app: Apple silicon and Intel.

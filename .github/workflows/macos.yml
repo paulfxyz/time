@@ -31,6 +31,8 @@ jobs:
           build/native-tests
       - name: Compile universal native app
         run: npm run build:mac
+      - name: Verify signed automatic update and tampering rejection
+        run: node macos/scripts/test-updater.mjs
       - name: Exercise real WKWebView and native fullscreen
         run: |
           node --input-type=module -e '
@@ -72,6 +74,8 @@ jobs:
             build/verification-save/
             build/verification-restore/
             build/verification-live/
+            build/updater-verification/report.json
+            build/updater-verification/events.txt
           if-no-files-found: warn
           retention-days: 30
   release:
