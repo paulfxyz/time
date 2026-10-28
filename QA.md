@@ -1,5 +1,28 @@
 # Timescreen QA inventory
 
+## Version 2.1.0
+
+The update/startup/window release adds native verification without changing the 28 clock styles. It was checked on 28 October 2026 with the following results.
+
+- **Automated checks:** 26 Node tests and 34 native policy/geometry assertions pass, plus the existing 47 browser interaction checks.
+- **True window relaunch:** the actual app saves a moved/resized window, quits, and launches in a separate process with the same isolated preferences. Its position and size are compared against the saved record before the remaining clock/fullscreen smoke checks run.
+- **Display geometry:** tests cover the exact original position, rearranging the same physical monitor, disconnecting a monitor, shrinking the available resolution, missing displays and corrupt saved bounds.
+- **Native Settings:** the real window exposes update checks, automatic download/install, launch at login, window memory/reset and the existing display options. A native screenshot was inspected, including scrolling on a short display.
+- **Real update installation:** a disposable macOS fixture uses the actual Sparkle framework to fetch a signed ZIP, extract it, replace version 1 with version 2 and relaunch. Its installed bundle version and code signature are checked after replacement.
+- **Tamper rejection:** the same fixture rejects a modified signed feed before extraction and a modified archive before installation. The fixture uses a fresh test key; the production signing secret is not used for these tests.
+- **Production signatures:** the release ZIP and mandatory-signed feed are generated with the repository's encrypted signing secret and verified by Sparkle's signing tool. The ZIP signature is also independently checked with Node's Ed25519 verifier.
+- **Privacy and boundaries:** automatic installation and login launch are opt-in, profile reporting is off, the native updater has no web-message command, and web setup codes cannot alter updater preferences.
+
+The framework installation test does not claim that a real future Timescreen release has already been installed on the user's Mac. macOS Login Items approval, first-open Gatekeeper policy and physical monitor arrangements still need acceptance on that destination device.
+
+To run the real updater fixture after the native build:
+
+```sh
+node macos/scripts/test-updater.mjs
+```
+
+The fixture touches only its generated `build/updater-verification/Fixture.app`. It never overwrites `/Applications/Timescreen.app` and never uses the production private key.
+
 ## Version 2.0.0
 
 Verified on 28 October 2026. The HTML5 clock is tested independently of the native host; native checks run in a real macOS WKWebView, not an Electron mock.

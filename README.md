@@ -13,7 +13,7 @@ A native Swift macOS app and a fullscreen HTML5 clock, sharing the same living d
 
 [Download for Mac](https://github.com/paulfxyz/timescreen/releases/latest) · [Open the web clock](https://time.paulfleury.com) · [Installation](INSTALL.md) · [All releases](https://github.com/paulfxyz/timescreen/releases)
 
-[![Latest release](https://img.shields.io/github/v/release/paulfxyz/timescreen?label=version&style=flat-square&color=679c78)](https://github.com/paulfxyz/timescreen/releases/latest)
+[![Latest release](https://img.shields.io/github/v/release/paulfxyz/timescreen?label=version&style=flat-square&color=679c78&cacheSeconds=300)](https://github.com/paulfxyz/timescreen/releases/latest)
 [![macOS](https://img.shields.io/badge/macOS-13%2B-202b3b?style=flat-square&logo=apple&logoColor=white)](INSTALL.md)
 [![Universal](https://img.shields.io/badge/Universal-Apple_silicon_%2B_Intel-63758c?style=flat-square)](macos/)
 [![Swift](https://img.shields.io/badge/Swift-native_shell-F05138?style=flat-square&logo=swift&logoColor=white)](macos/Sources/)
@@ -51,6 +51,10 @@ Download the universal DMG, drag Timescreen into Applications, and open it. No a
 Timescreen → Settings now groups **Updates**, **Startup and window**, and **Display and access**. Automatic checks run every six hours by default; automatic downloading/installing and launch at login are optional, while window position/size/display memory is on by default.
 
 Version 2.0.0 users install the 2.1.0 DMG once to gain the updater. After that, Check for Updates can download, install and relaunch newer releases without another browser-based download; automatic installs finish when the application quits.
+
+<img src=".github/img/native-settings-2.1.webp" alt="Native Timescreen 2.1.0 settings: update controls, launch at login and remembered window position" width="460">
+
+The screenshot is from the isolated native verification run, where automatic checks are disabled. The shipped default enables checks, while installation and login launch remain opt-in.
 
 ## A style for every mood
 
