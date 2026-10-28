@@ -13,6 +13,7 @@ A native Swift macOS app and a fullscreen HTML5 clock, sharing the same living d
 
 [Download for Mac](https://github.com/paulfxyz/timescreen/releases/latest) · [Open the web clock](https://time.paulfleury.com) · [Installation](INSTALL.md) · [All releases](https://github.com/paulfxyz/timescreen/releases)
 
+[![Latest release](https://img.shields.io/github/v/release/paulfxyz/timescreen?label=version&style=flat-square&color=679c78)](https://github.com/paulfxyz/timescreen/releases/latest)
 [![macOS](https://img.shields.io/badge/macOS-13%2B-202b3b?style=flat-square&logo=apple&logoColor=white)](INSTALL.md)
 [![Universal](https://img.shields.io/badge/Universal-Apple_silicon_%2B_Intel-63758c?style=flat-square)](macos/)
 [![Swift](https://img.shields.io/badge/Swift-native_shell-F05138?style=flat-square&logo=swift&logoColor=white)](macos/Sources/)
