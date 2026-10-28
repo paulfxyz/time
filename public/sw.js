@@ -1,11 +1,12 @@
-const CACHE_NAME = 'time-1.1.0';
+const CACHE_NAME = 'time-2.0.0';
 const BASE = new URL('./', self.location).href;
 const SHELL = [
-  './', './index.html', './style.css', './app.js', './picture.js', './themes.js',
+  './', './index.html', './style.css', './scenes.css', './scenes.js', './ambient.js', './app.js', './picture.js', './themes.js',
   './earth.js', './solar.js', './icons.js', './manifest.webmanifest', './favicon.svg',
   './assets/earth-day.webp', './assets/earth-night.webp', './assets/earth-specular.webp',
   './assets/earth-clouds.webp', './assets/satoshi-light.woff2', './assets/satoshi-regular.woff2',
   './assets/satoshi-medium.woff2', './assets/satoshi-bold.woff2',
+  './assets/jetbrains-mono.ttf', './assets/instrument-serif.ttf',
   './assets/app-icon-192.png', './assets/app-icon-512.png', './assets/app-icon-maskable.png',
 ];
 self.addEventListener('install', event => {

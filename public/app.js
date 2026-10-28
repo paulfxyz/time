@@ -3,6 +3,8 @@ import { sunPosition, solarElevation, solarPhase, sunTimes, zonedParts, clamp } 
 import { Earth } from './earth.js';
 import { renderIcons, setIcon } from './icons.js';
 import { PICTURE_DEFAULTS, PICTURE_LIMITS, PICTURE_PRESETS, normalizePicture, pictureFilter, matchingPicturePreset } from './picture.js';
+import { SCENES, SCENE_CATEGORIES, getScene, sceneMatches, sceneSettings } from './scenes.js';
+import { Ambient } from './ambient.js';
 
 const $ = selector => document.querySelector(selector);
 const root = document.documentElement;
@@ -18,7 +20,7 @@ const defaults = {
   theme: 'observatory', mode: systemMode.matches ? 'dark' : 'light', pattern: 'stars',
   finish: 0, city: deviceCity.id, timezone: deviceCity.zone, rotation: reducedMotion.matches ? 0 : 240,
   format: '24', seconds: true, labels: true, lights: true, grid: false, world: true,
-  layout: 'auto', accent: null,
+  layout: 'auto', accent: null, scene: 'observatory', effects: true,
   ...PICTURE_DEFAULTS,
 };
 let state = loadState();
@@ -34,6 +36,14 @@ let awakeRequested = false;
 let solarCache = null;
 let lastSecond = '';
 let lastModeManual = Boolean(new URLSearchParams(location.hash.slice(1)).get('mode'));
+let sceneCategory = 'All';
+let nativeFullscreen = false;
+const isNative = Boolean(window.timescreenNative?.available);
+const postNative = (command, value) => {
+  if (!isNative) return false;
+  try { window.webkit.messageHandlers.timescreen.postMessage({ command, value }); return true; }
+  catch { return false; }
+};
 const formatterCache = new Map();
 
 function resolveCity(id, zone) {
@@ -52,6 +62,7 @@ function validZone(zone) {
 function loadState(query = location.hash.slice(1)) {
   const params = new URLSearchParams(query);
   const value = { ...defaults };
+  if (SCENES.some(s => s.id === params.get('scene'))) Object.assign(value, sceneSettings(params.get('scene')));
   const theme = THEMES.find(t => t.id === params.get('theme'));
   if (theme) { value.theme = theme.id; value.pattern = theme.pattern; value.finish = theme.style; }
   if (['light', 'dark'].includes(params.get('mode'))) value.mode = params.get('mode');
@@ -60,7 +71,7 @@ function loadState(query = location.hash.slice(1)) {
   if (['0', '60', '120', '240', '600'].includes(params.get('rotation'))) value.rotation = Number(params.get('rotation'));
   if (['12', '24'].includes(params.get('format'))) value.format = params.get('format');
   if (['auto', 'wide', 'vertical'].includes(params.get('layout'))) value.layout = params.get('layout');
-  for (const key of ['seconds','labels','lights','grid','world']) {
+  for (const key of ['seconds','labels','lights','grid','world','effects']) {
     if (params.has(key)) value[key] = params.get(key) !== '0';
   }
   if (CITIES.some(c => c.id === params.get('city'))) {
@@ -78,8 +89,8 @@ function loadState(query = location.hash.slice(1)) {
 
 function serializeState() {
   const p = new URLSearchParams();
-  for (const key of ['theme','mode','pattern','finish','rotation','format','layout','city']) p.set(key, String(state[key]));
-  for (const key of ['seconds','labels','lights','grid','world']) p.set(key, state[key] ? '1' : '0');
+  for (const key of ['scene','theme','mode','pattern','finish','rotation','format','layout','city']) p.set(key, String(state[key]));
+  for (const key of ['seconds','labels','lights','grid','world','effects']) p.set(key, state[key] ? '1' : '0');
   if (state.city === 'device') p.set('zone', state.timezone);
   if (state.accent) p.set('accent', state.accent);
   for (const key of Object.keys(PICTURE_LIMITS)) p.set(key, String(state[key]));
@@ -88,6 +99,7 @@ function serializeState() {
 
 function saveState() {
   try { history.replaceState(null, '', `#${serializeState()}`); } catch {}
+  postNative('saveSetup', serializeState());
 }
 
 function notice(message) {
@@ -121,6 +133,7 @@ function readableColor(color, background, minimum = 4.5) {
 }
 
 const earth = new Earth($('#earth-canvas'), $('#earth-viewport'), notice);
+const ambient = new Ambient($('#ambient-canvas'));
 
 function applyAppearance() {
   const theme = THEMES.find(t => t.id === state.theme) || THEMES[0];
@@ -128,6 +141,11 @@ function applyAppearance() {
   const [background, foreground, rawMuted, rawAccent, surface] = palette;
   const accent = state.accent || rawAccent;
   const effectiveAccent = readableColor(accent, background);
+  const scene = getScene(state.scene);
+  root.dataset.scene = scene.id;
+  root.dataset.composition = scene.composition;
+  root.dataset.clock = scene.clock;
+  root.dataset.effects = String(state.effects);
   root.dataset.theme = state.mode;
   root.style.setProperty('--color-bg', background);
   root.style.setProperty('--color-text', foreground);
@@ -164,12 +182,18 @@ function applyAppearance() {
   $('#show-grid').checked = state.grid;
   $('#show-seconds').checked = state.seconds;
   $('#show-world').checked = state.world;
+  $('#show-effects').checked = state.effects;
+  $('#scene-caption').textContent = scene.label;
+  $('#current-scene-name').textContent = scene.name;
+  document.querySelectorAll('.scene-card').forEach(button =>
+    button.setAttribute('aria-pressed', String(button.dataset.scene === scene.id)));
   updateRotationControl();
   earth.update({
     style: state.finish, accent, lightMode: state.mode === 'light',
     period: state.rotation, grid: state.grid, lights: state.lights,
   });
   drawBackground();
+  ambient.update(scene.effect, state.effects, effectiveAccent, state.mode === 'light');
   applyPicture();
   updateLabels();
   lastSecond = '';
@@ -258,6 +282,72 @@ function buildSettings() {
     $('#pattern-grid').append(button);
   });
   FINISHES.forEach(([id, name]) => $('#globe-finish').add(new Option(name, id)));
+  $('#scene-count').textContent = SCENES.length;
+  for (const scene of SCENES) {
+    const palette = THEMES.find(t => t.id === scene.theme)[scene.mode];
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'scene-card';
+    button.dataset.scene = scene.id;
+    button.dataset.testid = `scene-${scene.id}`;
+    button.setAttribute('aria-label', `${scene.name} style`);
+    button.style.setProperty('--scene-bg', palette[0]);
+    button.style.setProperty('--scene-fg', palette[1]);
+    button.style.setProperty('--scene-accent', palette[3]);
+    const preview = document.createElement('span');
+    preview.className = 'scene-preview';
+    preview.setAttribute('aria-hidden', 'true');
+    preview.dataset.clock = scene.clock;
+    preview.innerHTML = '<span class="mini-clock"><span>10</span><b>:</b><span>08</span></span><span class="mini-earth"></span>';
+    const name = document.createElement('span');
+    name.className = 'scene-name';
+    name.textContent = scene.name;
+    const description = document.createElement('span');
+    description.className = 'scene-description';
+    description.textContent = scene.description;
+    button.append(preview, name, description);
+    button.addEventListener('click', () => selectScene(scene.id));
+    $('#scene-grid').append(button);
+  }
+  for (const category of SCENE_CATEGORIES) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = category;
+    button.dataset.category = category;
+    button.dataset.testid = `category-${category.toLowerCase()}`;
+    button.setAttribute('aria-pressed', String(category === 'All'));
+    button.addEventListener('click', () => { sceneCategory = category; filterScenes(); });
+    $('#scene-categories').append(button);
+  }
+}
+
+function filterScenes() {
+  let count = 0;
+  const query = $('#scene-search').value;
+  document.querySelectorAll('.scene-card').forEach(button => {
+    button.hidden = !sceneMatches(getScene(button.dataset.scene), query, sceneCategory);
+    if (!button.hidden) count++;
+  });
+  document.querySelectorAll('[data-category]').forEach(button =>
+    button.setAttribute('aria-pressed', String(button.dataset.category === sceneCategory)));
+  $('#scene-match-count').textContent = count;
+  $('#scene-empty').hidden = count > 0;
+}
+
+function selectScene(id) {
+  Object.assign(state, sceneSettings(id));
+  const theme = THEMES.find(t => t.id === state.theme);
+  state.pattern = theme.pattern;
+  state.finish = theme.style;
+  lastModeManual = true;
+  applyAppearance();
+  saveState();
+}
+
+function nextScene(direction = 1) {
+  const index = SCENES.findIndex(s => s.id === state.scene);
+  selectScene(SCENES[(index + direction + SCENES.length) % SCENES.length].id);
+  notice(getScene(state.scene).name);
 }
 
 function formatter(timezone, type = 'time') {
@@ -361,7 +451,8 @@ function updateWorldClocks(date, sun) {
   const localDate = dayKey(date, selectedCity.zone);
   worldItems.forEach(item => {
     const cityDate = dayKey(date, item.city.zone);
-    const difference = (new Date(`${cityDate}T00:00:00Z`) - new Date(`${localDate}T00:00:00Z`)) / 86400000;
+    const asDay = value => { const [y,m,d] = value.split('-').map(Number); return Date.UTC(y, m - 1, d); };
+    const difference = (asDay(cityDate) - asDay(localDate)) / 86400000;
     const relation = difference > 0 ? 'Tomorrow' : difference < 0 ? 'Yesterday' : 'Today';
     item.time.textContent = timeString(date, item.city.zone);
     item.meta.textContent = `${relation} · ${offsetString(date, item.city.zone)}`;
@@ -469,6 +560,7 @@ function setQuiet(value) {
 }
 
 async function toggleFullscreen() {
+  if (postNative('fullscreen')) return;
   const native = nativeFullscreenElement();
   if (native) {
     const exit = document.exitFullscreen || document.webkitExitFullscreen;
@@ -520,7 +612,7 @@ function isStandalone() {
     || navigator.standalone === true;
 }
 function syncFullscreenControl() {
-  const active = Boolean(nativeFullscreenElement()) || fallbackFullscreen;
+  const active = nativeFullscreen || Boolean(nativeFullscreenElement()) || fallbackFullscreen;
   document.body.classList.toggle('display-active', active);
   setIcon($('#fullscreen-button [data-icon]'), active ? 'minimize' : 'maximize');
   const label = active ? 'Exit full screen' : 'Enter full screen';
@@ -542,6 +634,10 @@ function showFullscreenHelp(blocked = false) {
 }
 
 async function manageWakeLock() {
+  if (isNative) {
+    postNative('keepAwake', awakeRequested);
+    return;
+  }
   if (!awakeRequested) {
     if (wakeLock) await wakeLock.release().catch(() => {});
     wakeLock = null;
@@ -631,6 +727,17 @@ renderIcons();
 applyAppearance();
 
 $('#light-button').addEventListener('click', () => openDialog('light-dialog'));
+$('#scene-search').addEventListener('input', filterScenes);
+$('#clear-scene-filters').addEventListener('click', () => {
+  $('#scene-search').value = ''; sceneCategory = 'All'; filterScenes();
+});
+$('#shuffle-scene').addEventListener('click', () => {
+  const candidates = SCENES.filter(s => s.id !== state.scene);
+  selectScene(candidates[Math.floor(Math.random() * candidates.length)].id);
+  $('#appearance-dialog').close();
+  notice(getScene(state.scene).name);
+});
+$('#scene-current').addEventListener('click', () => { activateTab('styles'); openDialog('appearance-dialog'); });
 document.querySelectorAll('[data-picture-setting]').forEach(input => input.addEventListener('input', () => {
   state[input.dataset.pictureSetting] = Number(input.value);
   applyPicture();
@@ -722,7 +829,7 @@ $('#city-search').addEventListener('input', () => {
   updateCityTimes(new Date());
 });
 function activateTab(name, focus = false) {
-  for (const id of ['themes','display']) {
+  for (const id of ['styles','themes','display']) {
     const selected = id === name;
     $(`#tab-${id}`).setAttribute('aria-selected', String(selected));
     $(`#tab-${id}`).tabIndex = selected ? 0 : -1;
@@ -731,16 +838,18 @@ function activateTab(name, focus = false) {
   $('.settings-scroll').scrollTop = 0;
   if (focus) $(`#tab-${name}`).focus();
 }
-for (const id of ['themes','display']) {
+for (const id of ['styles','themes','display']) {
   $(`#tab-${id}`).addEventListener('click', () => activateTab(id));
   $(`#tab-${id}`).addEventListener('keydown', event => {
     if (['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) {
       event.preventDefault();
-      activateTab(event.key === 'Home' ? 'themes' : event.key === 'End' ? 'display' : id === 'themes' ? 'display' : 'themes', true);
+      const tabs = ['styles','themes','display'];
+      const next = (tabs.indexOf(id) + (event.key === 'ArrowLeft' ? -1 : 1) + tabs.length) % tabs.length;
+      activateTab(event.key === 'Home' ? 'styles' : event.key === 'End' ? 'display' : tabs[next], true);
     }
   });
 }
-for (const [id, key] of [['show-labels','labels'],['show-lights','lights'],['show-grid','grid'],['show-seconds','seconds'],['show-world','world']]) {
+for (const [id, key] of [['show-labels','labels'],['show-lights','lights'],['show-grid','grid'],['show-seconds','seconds'],['show-world','world'],['show-effects','effects']]) {
   $(`#${id}`).addEventListener('change', event => { state[key] = event.target.checked; applyAppearance(); saveState(); });
 }
 for (const [id, key] of [['globe-finish','finish'],['rotation-speed','rotation'],['clock-format','format'],['layout-select','layout']]) {
@@ -771,6 +880,10 @@ $('#reset-button').addEventListener('click', () => {
 $('#copy-button').addEventListener('click', async () => {
   const setupCode = `time:v2:${serializeState()}`;
   $('#restore-form').hidden = true;
+  if (postNative('copySetup', setupCode)) {
+    notice('Setup copied. Restore it on any screen.');
+    return;
+  }
   try {
     if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
     await navigator.clipboard.writeText(setupCode);
@@ -829,6 +942,8 @@ document.addEventListener('keydown', event => {
   if (key === 't') { event.preventDefault(); openDialog('appearance-dialog'); }
   if (key === 'l') { event.preventDefault(); toggleColourMode(); }
   if (key === 'b') { event.preventDefault(); openDialog('light-dialog'); }
+  if (key === '[') { event.preventDefault(); nextScene(-1); }
+  if (key === ']') { event.preventDefault(); nextScene(1); }
   if (key === ' ' && !['BUTTON','A'].includes(tag)) { event.preventDefault(); toggleRotation(); }
 });
 let resizeScheduled = false;
@@ -840,7 +955,7 @@ window.addEventListener('resize', () => {
 setInterval(tick, 200);
 syncFullscreenControl();
 
-if ('serviceWorker' in navigator && window.isSecureContext && window.self === window.top) {
+if (!isNative && 'serviceWorker' in navigator && window.isSecureContext && window.self === window.top) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register(new URL('./sw.js', import.meta.url).href)
       .catch(() => {}); // A restricted preview must remain usable without offline caching.
@@ -849,7 +964,29 @@ if ('serviceWorker' in navigator && window.isSecureContext && window.self === wi
 
 // Read-only diagnostics for deterministic display QA.
 window.solstice = Object.freeze({
-  getState: () => ({ ...state, selectedCity: { ...selectedCity }, quiet, fullscreen: Boolean(nativeFullscreenElement()) || fallbackFullscreen, renderer: earth.renderer, ready: earth.ready }),
+  getState: () => ({ ...state, selectedCity: { ...selectedCity }, quiet, fullscreen: nativeFullscreen || Boolean(nativeFullscreenElement()) || fallbackFullscreen, renderer: earth.renderer, ready: earth.ready }),
   getView: () => ({ longitude: earth.longitude, latitude: earth.latitude, zoom: earth.zoom, frames: earth.frameCount, radius: earth.radius }),
   getSun: () => ({ ...sunPosition() }),
 });
+window.timescreen = Object.freeze({ version:'2.0.0', sceneCount:SCENES.length, getState:window.solstice.getState });
+window.addEventListener('timescreen:native-state', event => {
+  if (!isNative) return;
+  nativeFullscreen = Boolean(event.detail?.fullscreen);
+  awakeRequested = Boolean(event.detail?.keepAwake);
+  $('#keep-awake').checked = awakeRequested;
+  $('#awake-status').textContent = awakeRequested
+    ? (event.detail?.awakeActive ? 'Your Mac display stays awake while this window is visible.' : 'Keep awake is selected. It resumes when the window is visible.')
+    : '';
+  syncFullscreenControl();
+});
+window.addEventListener('timescreen:command', event => {
+  if (!isNative) return;
+  const actions = {
+    appearance: () => { activateTab('styles'); openDialog('appearance-dialog'); },
+    picture: () => openDialog('light-dialog'),
+    quiet: () => setQuiet(!quiet),
+    next: () => nextScene(1), previous: () => nextScene(-1),
+  };
+  actions[event.detail]?.();
+});
+postNative('ready', { version:'2.0.0', setup:serializeState() });

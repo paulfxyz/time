@@ -1,6 +1,6 @@
 import {
   createElement, Sun, Moon, SlidersHorizontal, Maximize, Minimize, ChevronDown,
-  Sunrise, Sunset, Pause, Play, LocateFixed, Scan, X, Search, RotateCcw, Link, Copy, Download,
+  Sunrise, Sunset, Pause, Play, LocateFixed, Scan, X, Search, RotateCcw, Link, Copy, Download, Shuffle, ArrowUpRight,
 } from 'lucide';
 
 const icons = {
@@ -8,6 +8,7 @@ const icons = {
   minimize: Minimize, 'chevron-down': ChevronDown, sunrise: Sunrise, sunset: Sunset,
   pause: Pause, play: Play, 'locate-fixed': LocateFixed, scan: Scan, x: X,
   search: Search, 'rotate-ccw': RotateCcw, link: Link, copy: Copy, download: Download,
+  shuffle: Shuffle, 'arrow-up-right': ArrowUpRight,
 };
 export function setIcon(element, name) {
   if (!element || !icons[name]) return;

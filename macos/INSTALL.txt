@@ -1,0 +1,48 @@
+TIMESCREEN 2.0.0
+28 styles. 60 palettes. One planet.
+
+INSTALL
+1. Drag Timescreen.app to Applications.
+2. Eject this disk image.
+3. Open Timescreen from Applications or Spotlight.
+
+FIRST OPEN
+This open-source build is ad-hoc signed, not Apple-notarized.
+macOS may block the first launch. If so, try opening the app, then go to
+System Settings > Privacy & Security > Open Anyway.
+Only proceed if you downloaded the app from the official release and trust it.
+Do not disable Gatekeeper globally.
+
+QUICK ACCESS
+Keep the app in your Dock, open it with Spotlight, or use its menu-bar clock.
+Closing the window keeps the launcher running. Command-Q quits completely.
+Settings > Open Timescreen at login is optional and off by default.
+
+DISPLAY
+Control-Command-F or the on-screen fullscreen button: native fullscreen.
+Command-T: appearance. Command-B: picture controls. Command-K: quiet mode.
+Command-[ and Command-]: previous / next style.
+Window > Move to Display: choose a monitor.
+View > Always on Top / Keep Screen Awake: optional.
+Settings > Open in full screen: remember your preferred launch mode.
+
+ONLINE AND OFFLINE
+The app automatically opens https://time.paulfleury.com.
+If the website is unavailable or older than this app, a complete built-in
+copy opens instead. View shows which copy is active.
+View > Reload Live Site retries the live website.
+Both versions share your native saved setup. No account is required.
+
+UPDATES
+Timescreen > Check for Updates opens the official GitHub releases.
+Replace the app in Applications after quitting it. Settings are retained.
+No silent binary updates, background analytics, or auto-start without consent.
+
+REQUIREMENTS
+macOS 13 Ventura or newer. Universal app: Apple silicon and Intel.
+
+SOURCE / RELEASES
+https://github.com/paulfxyz/timescreen
+https://github.com/paulfxyz/timescreen/releases
+
+Original code: MIT. Third-party assets retain their own licenses.

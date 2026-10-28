@@ -1,0 +1,74 @@
+name: Build macOS app
+on:
+  push:
+    branches: [main]
+    tags: ['v2.*']
+    paths-ignore: ['**.md', '.github/img/**', '.github/ISSUE_TEMPLATE/**']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm test && npm run build
+      - name: Test native trust boundary and resource paths
+        run: |
+          mkdir -p build
+          xcrun swiftc -swift-version 5 macos/Sources/NativePolicy.swift macos/Tests/NativeTests.swift -o build/native-tests
+          build/native-tests
+      - name: Compile universal native app
+        run: npm run build:mac
+      - name: Exercise real WKWebView and native fullscreen
+        run: |
+          node --input-type=module -e '
+            import {spawnSync} from "node:child_process";
+            const run = spawnSync("build/Timescreen.app/Contents/MacOS/Timescreen", ["--smoke-test", process.cwd()+"/build/verification"], {timeout:100000,stdio:"inherit"});
+            if (run.error) throw run.error;
+            process.exit(run.status ?? 1);'
+      - name: Create and verify drag-to-install DMG
+        run: npm run build:dmg
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: Timescreen-macOS-universal
+          path: |
+            build/Timescreen-2.0.0-macOS-universal.dmg
+            build/Timescreen-2.0.0-macOS-universal.zip
+            build/SHA256SUMS.txt
+            build/verification/
+          if-no-files-found: warn
+          retention-days: 30
+  release:
+    if: startsWith(github.ref, 'refs/tags/v2.')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/download-artifact@v4
+        with:
+          name: Timescreen-macOS-universal
+          path: dist
+      - name: Verify and publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$GITHUB_REF_NAME" = "v$(node -p 'require("./package.json").version')"
+          (cd dist && sha256sum -c SHA256SUMS.txt)
+          gh release create "$GITHUB_REF_NAME" \
+            dist/Timescreen-2.0.0-macOS-universal.dmg \
+            dist/Timescreen-2.0.0-macOS-universal.zip \
+            dist/SHA256SUMS.txt \
+            --title "Timescreen 2.0.0 · A native home for your spare screen" \
+            --notes-file RELEASE_NOTES.md --verify-tag

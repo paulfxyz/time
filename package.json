@@ -1,9 +1,9 @@
 {
   "name": "timescreen",
-  "version": "1.1.1",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
-  "description": "An elegant fullscreen HTML5 clock for a spare vertical monitor, with 60 paired themes and live Earth illumination.",
+  "description": "A native macOS and web clock with 28 scene designs, 60 paired palettes, live Earth illumination, and offline support.",
   "license": "MIT",
   "author": "Paul Fleury",
   "homepage": "https://time.paulfleury.com",
@@ -12,7 +12,9 @@
     "start": "serve public -l 3000 --no-clipboard",
     "test": "node --test tests/*.test.mjs",
     "setup:assets": "node tools/setup-assets.mjs",
-    "build": "npm run setup:assets && node tools/build.mjs"
+    "build": "npm run setup:assets && node tools/build.mjs",
+    "build:mac": "bash macos/scripts/build.sh",
+    "build:dmg": "bash macos/scripts/dmg.sh"
   },
   "dependencies": {
     "esbuild": "^0.25.0",
@@ -21,5 +23,9 @@
   "devDependencies": {
     "serve": "^14.2.4",
     "sharp": "^0.35.5"
+  },
+  "overrides": {
+    "compression": "^1.8.2",
+    "fast-uri": "^3.1.9"
   }
 }

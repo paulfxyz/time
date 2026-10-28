@@ -70,6 +70,12 @@ def remote_sha256(ftp, name):
     ftp.retrbinary("RETR " + name, digest.update)
     return digest.hexdigest()
 
+def guard_baseline(ftp):
+    for name, variable in [("index.html", "EXPECTED_INDEX_SHA256"), ("release.json", "EXPECTED_RELEASE_SHA256")]:
+        expected = os.environ.get(variable)
+        if expected and remote_sha256(ftp, name) != expected:
+            raise ValueError("The Time site changed since review. No activation permitted.")
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -92,6 +98,7 @@ def main():
     ftp.trust_server_pasv_ipv4_address = False
     ftp.cwd(directory)
     ftp.voidcmd("TYPE I")
+    guard_baseline(ftp)
     try:
         remote = [
             {"name": name, "type": info.get("type"), "size": info.get("size")}
@@ -126,6 +133,7 @@ def main():
                 raise ValueError("Uploaded-file checksum mismatch.")
             staged.append((relative, temporary, digest))
         ensure_directory(ftp, ".time-backups")
+        guard_baseline(ftp)
         ftp.storbinary("STOR .time-backups/.htaccess", io.BytesIO(b"Require all denied\n"))
         # Bootstrap documents are activated after their dependencies.
         priority = {".htaccess": -1, "index.html": 10, "sw.js": 11, "release.json": 12}

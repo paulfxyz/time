@@ -18,6 +18,6 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
-      - run: node --check public/app.js && node --check public/earth.js && node --check public/sw.js
+      - run: node --check public/app.js && node --check public/earth.js && node --check public/sw.js && node --check public/ambient.js && node --check public/scenes.js
       - run: python -m py_compile tools/deploy_ftp.py
       - run: npm audit --audit-level=high

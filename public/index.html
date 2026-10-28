@@ -4,9 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#080d13">
-  <meta name="description" content="A quiet moment on Earth. A fullscreen world clock with live sunlight, 60 light and dark themes, and TV-style picture controls.">
-  <meta property="og:title" content="Time · Earth, in real time">
-  <meta property="og:description" content="Your time. Our planet. 60 paired themes, live sunlight, and a screen that feels like yours.">
+  <meta name="description" content="Timescreen for Mac and the web. 28 expressive clock styles, 60 colour palettes, a living Earth, and a quieter spare screen.">
+  <meta name="timescreen-version" content="2.0.0">
+  <meta property="og:title" content="Timescreen · Make time look different">
+  <meta property="og:description" content="28 clock styles. 60 colour palettes. One planet. A native Mac app and a fullscreen web experience.">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Time">
@@ -17,6 +18,7 @@
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
   <link rel="preload" href="./assets/satoshi-light.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./scenes.css">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to clock</a>
@@ -29,12 +31,14 @@
   </header>
   <div id="screen" class="display-scene">
     <canvas id="background-canvas" aria-hidden="true"></canvas>
+    <canvas id="ambient-canvas" aria-hidden="true"></canvas>
     <div class="temperature-overlay" aria-hidden="true"></div>
     <div id="app" class="app-shell">
     <div class="header-space" aria-hidden="true"></div>
 
     <main id="main" class="stage" tabindex="-1">
       <section class="clock-panel" aria-label="Local time and sunlight">
+        <p id="scene-caption" class="scene-caption" aria-hidden="true">EARTH, IN REAL TIME</p>
         <div class="clock-eyebrow"><span class="live-dot"></span><span id="clock-eyebrow">YOUR LOCAL TIME</span></div>
         <button id="city-button" class="city-button" aria-haspopup="dialog" data-testid="button-city">
           <h1 id="city-name">Local time</h1><span data-icon="chevron-down"></span>
@@ -73,7 +77,7 @@
       <div class="world-strip" id="world-strip" aria-label="Around the world"></div>
       <div class="statusbar chrome">
         <div class="status-left"><span class="live-dot"></span><span>LIVE SUNLIGHT</span><span class="status-dot">·</span><span id="solar-coordinates" title="The point on Earth directly beneath the Sun" data-testid="text-subsolar"></span></div>
-        <p class="status-poetry">Same planet. Different moments.</p>
+        <button id="scene-current" class="quiet-button scene-current" title="Choose a style (T)" data-testid="button-current-scene"><span class="scene-swatch" aria-hidden="true"></span><span id="current-scene-name">Observatory</span><span data-icon="chevron-down"></span></button>
         <button id="focus-button" class="quiet-button" title="Hide interface (H)" data-testid="button-focus"><span data-icon="scan"></span><span>Quiet mode</span><kbd>H</kbd></button>
       </div>
     </footer>
@@ -101,13 +105,22 @@
   </dialog>
 
   <dialog id="appearance-dialog" class="settings-dialog" aria-labelledby="appearance-title" data-testid="dialog-appearance">
-    <div class="dialog-heading"><div><span class="eyebrow">MAKE IT YOURS</span><h2 id="appearance-title">A different atmosphere.</h2></div><button class="icon-button close-dialog" title="Close appearance" aria-label="Close appearance" data-testid="button-close-appearance"><span data-icon="x"></span></button></div>
+    <div class="dialog-heading"><div><span class="eyebrow">MAKE TIME LOOK DIFFERENT</span><h2 id="appearance-title">Find your atmosphere.</h2></div><button class="icon-button close-dialog" title="Close appearance" aria-label="Close appearance" data-testid="button-close-appearance"><span data-icon="x"></span></button></div>
     <div class="settings-tabs" role="tablist" aria-label="Settings sections">
-      <button id="tab-themes" role="tab" aria-selected="true" aria-controls="themes-panel" data-testid="tab-themes">Themes <span id="theme-count">60</span></button>
+      <button id="tab-styles" role="tab" aria-selected="true" aria-controls="styles-panel" data-testid="tab-styles">Styles <span id="scene-count">28</span></button>
+      <button id="tab-themes" role="tab" aria-selected="false" aria-controls="themes-panel" tabindex="-1" data-testid="tab-themes">Colours <span id="theme-count">60</span></button>
       <button id="tab-display" role="tab" aria-selected="false" aria-controls="display-panel" tabindex="-1" data-testid="tab-display">Display</button>
     </div>
     <div class="settings-scroll">
-      <div id="themes-panel" role="tabpanel" aria-labelledby="tab-themes">
+      <div id="styles-panel" role="tabpanel" aria-labelledby="tab-styles">
+        <div class="scene-intro"><p>Not just a different colour.<br>A different way to see time.</p><button id="shuffle-scene" class="quiet-button" data-testid="button-shuffle"><span data-icon="shuffle"></span>Surprise me</button></div>
+        <label class="theme-search"><span data-icon="search"></span><input type="search" id="scene-search" placeholder="Matrix, Apple, neon…" aria-label="Search styles" data-testid="input-scene-search"><span id="scene-match-count">28</span></label>
+        <div id="scene-categories" class="scene-categories" role="group" aria-label="Style categories"></div>
+        <div id="scene-grid" class="scene-grid"></div>
+        <div id="scene-empty" class="scene-empty" hidden><p>No styles match that combination.</p><button id="clear-scene-filters" class="quiet-button" data-testid="button-clear-style-filters">Clear filters</button></div>
+        <p class="setting-note scene-inspiration">Cupertino and Spectrum are independent design tributes, not Apple or Google products. Every style works with all 60 colour palettes.</p>
+      </div>
+      <div id="themes-panel" role="tabpanel" aria-labelledby="tab-themes" hidden>
         <div class="setting-row mode-row"><span>Light & dark</span><div class="segmented"><button data-mode="light" data-testid="mode-light"><span data-icon="sun"></span>Light</button><button data-mode="dark" data-testid="mode-dark"><span data-icon="moon"></span>Dark</button></div></div>
         <div class="section-label"><h3>Choose a mood</h3><span id="active-theme-name">Observatory</span></div>
         <label class="theme-search"><span data-icon="search"></span><input type="search" id="theme-search" placeholder="Find a theme" aria-label="Search themes" data-testid="input-theme-search"><span id="theme-match-count">60</span></label>
@@ -118,6 +131,8 @@
         <div class="setting-row"><label for="accent-color">Your own accent</label><div class="color-input-wrap"><span id="accent-value">#dda876</span><input type="color" id="accent-color" value="#dda876" data-testid="input-accent" aria-label="Custom accent color"></div></div>
       </div>
       <div id="display-panel" role="tabpanel" aria-labelledby="tab-display" hidden>
+        <label class="toggle-setting"><span>Ambient effects<span>Gentle movement, never flashing</span></span><input type="checkbox" id="show-effects" checked data-testid="toggle-effects"><span class="switch" aria-hidden="true"></span></label>
+        <p class="setting-note">Effects become still when Reduce Motion is enabled on your device, and pause when the page is hidden.</p>
         <div class="section-label"><h3>The planet</h3></div>
         <label class="select-setting" for="globe-finish"><span>Earth finish</span><select id="globe-finish" data-testid="select-finish"></select></label>
         <label class="select-setting" for="rotation-speed"><span>Viewing rotation</span><select id="rotation-speed" data-testid="select-speed"><option value="0">Still</option><option value="600">Glacial · 10 min / turn</option><option value="240">Slow · 4 min / turn</option><option value="120">Drift · 2 min / turn</option><option value="60">Explore · 1 min / turn</option></select></label>
@@ -134,7 +149,8 @@
         <label class="toggle-setting"><span>Keep screen awake<span>While visible, if your browser allows</span></span><input type="checkbox" id="keep-awake" data-testid="toggle-awake"><span class="switch" aria-hidden="true"></span></label>
         <p class="setting-note" id="awake-status" role="status"></p>
         <div class="section-label"><h3>Keys to a quieter screen</h3></div>
-        <div class="keyboard-grid"><span><kbd>F</kbd> Full screen</span><span><kbd>H</kbd> Quiet mode</span><span><kbd>T</kbd> Themes</span><span><kbd>B</kbd> Picture controls</span><span><kbd>L</kbd> Light / dark</span><span><kbd>Space</kbd> Pause orbit</span><span><kbd>Esc</kbd> Back to controls</span></div>
+        <div class="keyboard-grid"><span><kbd>F</kbd> Full screen</span><span><kbd>H</kbd> Quiet mode</span><span><kbd>T</kbd> Styles</span><span><kbd>B</kbd> Picture controls</span><span><kbd>L</kbd> Light / dark</span><span><kbd>[ ]</kbd> Previous / next style</span><span><kbd>Space</kbd> Pause orbit</span><span><kbd>Esc</kbd> Back to controls</span></div>
+        <div class="mac-download"><h3>Time, made for your Mac.</h3><p>A native window, menu-bar access, remembered settings and a complete offline copy.</p><a href="https://github.com/paulfxyz/timescreen/releases/latest" target="_blank" rel="noopener noreferrer" data-testid="link-mac-download">Get Timescreen for macOS <span data-icon="arrow-up-right"></span></a><span class="setting-note">macOS 13+ · Apple silicon & Intel · Ad-hoc signed, not notarized.</span></div>
         <div class="about-note"><p>Clocks use your device time and IANA time zones. Sunlight and sunrise / sunset are calculated estimates, not a weather forecast. Earth imagery is a static composite, not live satellite photography.</p><p><a href="https://www.gml.noaa.gov/grad/solcalc/solareqns.PDF" target="_blank" rel="noopener noreferrer" data-testid="link-noaa">Solar equations: NOAA</a><span> · </span><a href="https://cs.wellesley.edu/~cs307/threejs/r124/three.js-master/examples/textures/planets/" target="_blank" rel="noopener noreferrer" data-testid="link-imagery">Earth textures: Three.js collection</a></p></div>
       </div>
     </div>

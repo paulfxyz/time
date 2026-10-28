@@ -17,3 +17,6 @@ public/release.json
 deploy-backups/
 __pycache__/
 *.pyc
+build/
+dist/
+macos/.build/
