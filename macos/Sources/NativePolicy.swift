@@ -1,8 +1,9 @@
 import Foundation
 
 enum NativePolicy {
-    static let version = "2.0.0"
-    static let liveURL = URL(string: "https://time.paulfleury.com/")!
+    static let version = "2.1.0"
+    static let minimumWebVersion = "2.0.0"
+    static let liveURL = URL(string: "https://time.paulfleury.com/?app=\(version)")!
     static let bundleURL = URL(string: "timescreen://app/index.html")!
 
     static func trusted(_ url: URL?) -> Bool {

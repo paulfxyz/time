@@ -33,6 +33,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
     var qaStarted = false
     var qaFailures: [String] = []
     var sourceReason = ""
+    var updates: UpdateManager!
+    var placementStore: WindowPlacementStore!
+    var restoringPlacement = false
+    var placementSave: DispatchWorkItem?
+    var updateStatusLabel: NSTextField?
+    var loginStatusLabel: NSTextField?
+    var settingsControls: [String:NSButton] = [:]
+    var updateCheckButton: NSButton?
     let smokeDirectory: String?
     let prefs: UserDefaults
     var isFullscreen: Bool { window?.styleMask.contains(.fullScreen) ?? false }
@@ -41,19 +49,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
         let args = CommandLine.arguments
         if let i = args.firstIndex(of: "--smoke-test"), args.indices.contains(i + 1) {
             smokeDirectory = args[i + 1]
-            prefs = UserDefaults(suiteName: "com.paulfleury.timescreen.smoke.\(UUID().uuidString)")!
+            let suite: String
+            if let suiteIndex = args.firstIndex(of:"--preferences-suite"), args.indices.contains(suiteIndex+1),
+               args[suiteIndex+1].hasPrefix("com.paulfleury.timescreen.qa.") {
+                suite = args[suiteIndex+1]
+            } else { suite = "com.paulfleury.timescreen.smoke.\(UUID().uuidString)" }
+            prefs = UserDefaults(suiteName:suite)!
         } else {
             smokeDirectory = nil
             prefs = .standard
         }
         super.init()
-        prefs.register(defaults: ["showMenuBar":true, "fullscreenOnLaunch":false, "alwaysOnTop":false, "keepAwake":false])
+        prefs.register(defaults: ["showMenuBar":true, "fullscreenOnLaunch":false, "alwaysOnTop":false,
+                                  "keepAwake":false, "rememberWindowPosition":true])
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.regular)
+        placementStore = WindowPlacementStore(preferences:prefs)
         buildMenus()
         buildWindow()
+        updates = UpdateManager()
+        updates.onChange = { [weak self] in self?.refreshSettings() }
+        updates.onWillRelaunch = { [weak self] in self?.saveWindowPosition(); self?.prefs.synchronize() }
+        updates.start()
         configureStatusItem()
         NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(willSleep),
             name: NSWorkspace.willSleepNotification, object: nil)
@@ -78,6 +97,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
     }
 
     func buildWindow() {
+        restoringPlacement = true
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = smokeDirectory == nil ? .default() : .nonPersistent()
         configuration.preferences.javaScriptCanOpenWindowsAutomatically = false
@@ -101,7 +121,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
         window = TimescreenWindow(contentRect: NSRect(x:0, y:0, width:1120, height:760),
             styleMask:[.titled,.closable,.miniaturizable,.resizable], backing:.buffered, defer:false)
         window.title = "Timescreen"
-        window.titlebarAppearsTransparent = true
+        window.titlebarAppearsTransparent = false
         window.backgroundColor = NSColor(calibratedRed:0.031, green:0.051, blue:0.075, alpha:1)
         window.minSize = NSSize(width:420, height:460)
         window.collectionBehavior = [.fullScreenPrimary]
@@ -144,9 +164,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
             stack.centerYAnchor.constraint(equalTo:loading.centerYAnchor)
         ])
         window.center()
-        if smokeDirectory == nil { _ = window.setFrameAutosaveName("TimescreenWindow") }
+        if prefs.bool(forKey:"rememberWindowPosition") {
+            if let saved = placementStore.restore() { window.setFrame(saved,display:false) }
+            else if smokeDirectory == nil { _ = window.setFrameUsingName("TimescreenWindow") }
+        }
         screensChanged()
         applyWindowPreferences()
+        restoringPlacement = false
     }
 
     func item(_ title: String, _ action: Selector?, _ key: String = "", modifiers: NSEvent.ModifierFlags = .command) -> NSMenuItem {
@@ -235,6 +259,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
         menu.addItem(item("Keep Screen Awake", #selector(toggleAwake)))
         menu.addItem(.separator())
         menu.addItem(item("Settings…", #selector(showSettings)))
+        menu.addItem(item("Check for Updates…", #selector(checkUpdates)))
         menu.addItem(item("Quit Timescreen", #selector(quit)))
         status.menu = menu; statusItem = status
     }
@@ -282,7 +307,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
         guard NativePolicy.trusted(webView.url) else { return }
         webView.evaluateJavaScript("window.timescreen?.version || null") { [weak self] result, _ in
             guard let self = self else { return }
-            if let version = result as? String, version.compare(NativePolicy.version, options:.numeric) != .orderedAscending {
+            if let version = result as? String, version.compare(NativePolicy.minimumWebVersion, options:.numeric) != .orderedAscending {
                 self.markReady()
             } else if self.source == "live" {
                 self.loadBundled("Newer styles included in this app")
@@ -341,7 +366,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
         switch command {
         case "ready":
             if let value = body["value"] as? [String:Any], let version = value["version"] as? String,
-               version.compare(NativePolicy.version, options:.numeric) != .orderedAscending {
+               version.compare(NativePolicy.minimumWebVersion, options:.numeric) != .orderedAscending {
                 if let setup = value["setup"] as? String, NativePolicy.validSetup(setup) { prefs.set(setup, forKey:"setup") }
                 markReady()
             }
@@ -378,6 +403,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
     @objc func toggleFullscreen(_ sender: Any?) {
         guard !fullscreenTransition else { return }
         showWindow(nil)
+        if !isFullscreen { saveWindowPosition() }
         fullscreenTransition = true
         window.toggleFullScreen(sender)
     }
@@ -401,8 +427,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
     func windowDidChangeOcclusionState(_ notification: Notification) { updateAwake() }
     func windowDidMiniaturize(_ notification: Notification) { releaseAwake(); sendNativeState() }
     func windowDidDeminiaturize(_ notification: Notification) { updateAwake() }
-    func windowWillClose(_ notification: Notification) { releaseAwake() }
-    func windowWillEnterFullScreen(_ notification: Notification) { fullscreenTransition = true }
+    func windowWillClose(_ notification: Notification) { saveWindowPosition(); releaseAwake() }
+    func windowDidMove(_ notification: Notification) { scheduleWindowPositionSave() }
+    func windowDidResize(_ notification: Notification) { scheduleWindowPositionSave() }
+    func scheduleWindowPositionSave() {
+        guard !restoringPlacement, !isFullscreen, !fullscreenTransition else { return }
+        placementSave?.cancel()
+        let work = DispatchWorkItem { [weak self] in self?.saveWindowPosition() }
+        placementSave = work
+        DispatchQueue.main.asyncAfter(deadline:.now()+0.2,execute:work)
+    }
+    func saveWindowPosition() {
+        guard let window = window, !restoringPlacement, !isFullscreen, !fullscreenTransition else { return }
+        placementStore?.save(frame:window.frame,screen:window.screen)
+    }
+    func windowWillEnterFullScreen(_ notification: Notification) { saveWindowPosition(); fullscreenTransition = true }
     func windowWillExitFullScreen(_ notification: Notification) { fullscreenTransition = true }
     func windowDidFailToEnterFullScreen(_ window: NSWindow) { fullscreenTransition = false; sendNativeState() }
     func windowDidFailToExitFullScreen(_ window: NSWindow) { fullscreenTransition = false; sendNativeState() }
@@ -420,6 +459,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
                 DispatchQueue.main.async { self.window.toggleFullScreen(nil) }
             }
         }
+        scheduleWindowPositionSave()
     }
     @objc func screensChanged() {
         guard let window = window, !isFullscreen else { return }
@@ -447,71 +487,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
         else { position(on:target); showWindow(nil) }
     }
     @objc func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+        if menuItem.action == #selector(checkUpdates) { return updates?.updater.canCheckForUpdates ?? false }
         if menuItem.action == #selector(toggleFullscreen(_:)) { menuItem.title = isFullscreen ? "Exit Full Screen" : "Enter Full Screen" }
         if menuItem.action == #selector(toggleOnTop) { menuItem.state = prefs.bool(forKey:"alwaysOnTop") ? .on : .off }
         if menuItem.action == #selector(toggleAwake) { menuItem.state = prefs.bool(forKey:"keepAwake") ? .on : .off }
         return true
     }
 
-    @objc func showSettings() {
-        if let previous = settingsWindow { previous.close() }
-        let settings = NSWindow(contentRect:NSRect(x:0,y:0,width:480,height:390),
-            styleMask:[.titled,.closable], backing:.buffered, defer:false)
-        settings.title = "Timescreen Settings"
-        settings.isReleasedWhenClosed = false
-        let headline = NSTextField(labelWithString:"A home for your spare screen.")
-        headline.font = .systemFont(ofSize:20, weight:.semibold)
-        let detail = NSTextField(wrappingLabelWithString:"Your style and window position are saved automatically. Closing the window keeps Timescreen available from the Dock and menu bar.")
-        detail.font = .systemFont(ofSize:13)
-        detail.textColor = .secondaryLabelColor
-        let stack = NSStackView()
-        stack.orientation = .vertical; stack.alignment = .leading; stack.spacing = 16
-        stack.addArrangedSubview(headline); stack.addArrangedSubview(detail)
-        for (key, title) in [
-            ("fullscreenOnLaunch","Open in full screen"),
-            ("showMenuBar","Show the menu-bar launcher"),
-            ("alwaysOnTop","Keep the window above other windows"),
-            ("keepAwake","Keep the display awake while Timescreen is visible"),
-            ("login","Open Timescreen at login")
-        ] {
-            let button = NSButton(checkboxWithTitle:title, target:self, action:#selector(preferenceChanged(_:)))
-            button.identifier = NSUserInterfaceItemIdentifier(key)
-            button.state = (key == "login" ? SMAppService.mainApp.status == .enabled : prefs.bool(forKey:key)) ? .on : .off
-            stack.addArrangedSubview(button)
-        }
-        let note = NSTextField(wrappingLabelWithString:"Keep awake never prevents manual sleep or closing your Mac. Login launch is optional and may require approval in System Settings.")
-        note.font = .systemFont(ofSize:12); note.textColor = .secondaryLabelColor
-        stack.addArrangedSubview(note)
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        settings.contentView?.addSubview(stack)
-        NSLayoutConstraint.activate([
-            stack.leadingAnchor.constraint(equalTo:settings.contentView!.leadingAnchor, constant:28),
-            stack.trailingAnchor.constraint(equalTo:settings.contentView!.trailingAnchor, constant:-28),
-            stack.topAnchor.constraint(equalTo:settings.contentView!.topAnchor, constant:28)
-        ])
-        settings.center(); settings.makeKeyAndOrderFront(nil)
-        NSApp.activate(ignoringOtherApps:true)
-        settingsWindow = settings
-    }
-    @objc func preferenceChanged(_ sender: NSButton) {
-        let key = sender.identifier!.rawValue, enabled = sender.state == .on
-        if key == "login" {
-            do {
-                if enabled { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() }
-                if SMAppService.mainApp.status == .requiresApproval { SMAppService.openSystemSettingsLoginItems() }
-            } catch {
-                sender.state = SMAppService.mainApp.status == .enabled ? .on : .off
-                let alert = NSAlert()
-                alert.messageText = "Login launch needs your attention"
-                alert.informativeText = "Move Timescreen to Applications first, then try again. You can also add it in System Settings → General → Login Items."
-                alert.runModal()
-            }
-        } else {
-            prefs.set(enabled, forKey:key)
-            if key == "showMenuBar" { configureStatusItem() }
-            applyWindowPreferences(); updateAwake()
-        }
-    }
     @objc func about() {
         NSApp.orderFrontStandardAboutPanel(options:[
             .applicationName:"Timescreen", .applicationVersion:NativePolicy.version,
@@ -521,17 +503,34 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
     @objc func openRepository() { NSWorkspace.shared.open(URL(string:"https://github.com/paulfxyz/timescreen")!) }
     @objc func openWebsite() { NSWorkspace.shared.open(NativePolicy.liveURL) }
     @objc func checkUpdates() {
-        // Browser-mediated updates avoid silently executing a downloaded binary.
-        NSWorkspace.shared.open(URL(string:"https://github.com/paulfxyz/timescreen/releases/latest")!)
+        NSApp.activate(ignoringOtherApps:true)
+        updates.checkNow()
     }
     func applicationWillTerminate(_ notification: Notification) {
         timeout?.cancel()
+        placementSave?.cancel()
+        saveWindowPosition()
+        prefs.synchronize()
         releaseAwake()
         web?.configuration.userContentController.removeScriptMessageHandler(forName:"timescreen")
     }
 
     // CI runs the real WKWebView and native window, not a browser mock.
     func startQA() {
+        if !updates.updater.canCheckForUpdates { qaFailures.append("Native updater did not initialize") }
+        if CommandLine.arguments.contains("--geometry-save") {
+            let frame = WindowPlacement.constrained(CGRect(x:94,y:88,width:730,height:540),to:NSScreen.main!.visibleFrame)
+            window.setFrame(frame,display:true)
+            saveWindowPosition()
+            prefs.synchronize()
+        } else if CommandLine.arguments.contains("--geometry-restore") {
+            if let expected = placementStore.restore() {
+                if abs(window.frame.minX-expected.minX)>2 || abs(window.frame.minY-expected.minY)>2
+                    || abs(window.frame.width-expected.width)>2 || abs(window.frame.height-expected.height)>2 {
+                    qaFailures.append("Window position/size was not restored across launch")
+                }
+            } else { qaFailures.append("Saved window placement was missing on relaunch") }
+        }
         DispatchQueue.main.asyncAfter(deadline:.now()+1.5) { [weak self] in self?.qaScene(0) }
     }
     func qaScene(_ index: Int) {
@@ -589,14 +588,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
     }
     func finishQA(_ extra: [String]) {
         guard let directory = smokeDirectory else { return }
+        if settingsWindow == nil {
+            showSettings()
+            settingsWindow?.contentView?.layoutSubtreeIfNeeded()
+            DispatchQueue.main.asyncAfter(deadline:.now()+0.4) { self.finishQA(extra) }
+            return
+        }
         let failures = qaFailures + extra
         let report: [String:Any] = ["version":NativePolicy.version, "passed":failures.isEmpty,
             "failures":failures, "source":source, "sourceReason":sourceReason, "engine":"real macOS WKWebView",
-            "checks":["bundled offline load","28 style cards","3 style renders","native bridge","setup persistence","native fullscreen round trip"]]
+            "checks":["bundled offline load","28 style cards","3 style renders","native bridge","setup persistence",
+                      "native fullscreen round trip","Sparkle initialized","window placement policy"]]
         try? FileManager.default.createDirectory(atPath:directory, withIntermediateDirectories:true)
         try? NativePolicy.json(report).write(toFile:directory+"/native-smoke.json", atomically:true, encoding:.utf8)
+        if let view = settingsWindow?.contentView,
+           let bitmap = view.bitmapImageRepForCachingDisplay(in:view.bounds) {
+            view.cacheDisplay(in:view.bounds,to:bitmap)
+            if let png = bitmap.representation(using:.png,properties:[:]) {
+                try? png.write(to:URL(fileURLWithPath:directory).appendingPathComponent("native-settings.png"))
+            }
+        }
         print(NativePolicy.json(report))
         releaseAwake()
+        saveWindowPosition()
+        prefs.synchronize()
         fflush(stdout)
         exit(failures.isEmpty ? 0 : 1)
     }

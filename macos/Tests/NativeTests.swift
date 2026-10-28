@@ -1,4 +1,4 @@
-import Foundation
+import AppKit
 
 @main
 struct NativeTests {
@@ -34,6 +34,27 @@ struct NativeTests {
         let encoded = NativePolicy.json(fixture)
         let decoded = try JSONSerialization.jsonObject(with:Data(encoded.utf8), options:.fragmentsAllowed) as? String
         check(decoded == fixture, "JSON safely round trips script characters")
+        let primary = DisplaySpace(identifier:"main",visible:CGRect(x:0,y:30,width:1440,height:870))
+        let secondary = DisplaySpace(identifier:"external",visible:CGRect(x:-1920,y:0,width:1920,height:1080))
+        let original = CGRect(x:94,y:88,width:730,height:540)
+        let placement = WindowPlacement(frame:original,display:primary)
+        check(placement.restored(on:[primary]) == original, "Restore the exact saved position and size")
+        let shiftedPrimary = DisplaySpace(identifier:"main",visible:primary.visible.offsetBy(dx:1920,dy:0))
+        check(placement.restored(on:[shiftedPrimary]) == original.offsetBy(dx:1920,dy:0), "Follow the same physical display after rearrangement")
+        let externalFrame = CGRect(x:-1800,y:150,width:1120,height:760)
+        let missing = WindowPlacement(frame:externalFrame,display:secondary).restored(on:[primary])!
+        check(primary.visible.contains(missing), "Recover on an available display after disconnect")
+        let small = DisplaySpace(identifier:"main",visible:CGRect(x:0,y:0,width:800,height:600))
+        check(small.visible.contains(WindowPlacement(frame:CGRect(x:1200,y:800,width:1400,height:1000),display:primary).restored(on:[small])!), "Clamp oversized frames after resolution change")
+        check(placement.restored(on:[]) == nil, "Handle no display")
+        check(!WindowPlacement.finite(CGRect(x:CGFloat.nan,y:0,width:800,height:600)), "Reject corrupt geometry")
+        check(WindowPlacement(frame:CGRect(x:0,y:0,width:0,height:600),display:primary).restored(on:[primary]) == nil, "Reject zero-sized saved frame")
+        let suite = UserDefaults(suiteName:"com.paulfleury.timescreen.qa.policy.\(UUID().uuidString)")!
+        suite.set(false,forKey:"rememberWindowPosition")
+        let store = WindowPlacementStore(preferences:suite)
+        store.save(frame:original,screen:NSScreen.main)
+        check(suite.data(forKey:WindowPlacementStore.key) == nil, "Disabled window memory writes nothing")
+        check(!NativePolicy.validSetup("automaticUpdates=1"), "Web content cannot change native updater preferences")
         print("\(count) native policy checks passed.")
     }
 }

@@ -1,4 +1,4 @@
-import { clamp, geoVector, sunPosition } from './solar.js?v=2.0.0';
+import { clamp, geoVector, sunPosition } from './solar.js?v=2.1.0';
 
 const RAD = Math.PI / 180;
 const TAU = Math.PI * 2;

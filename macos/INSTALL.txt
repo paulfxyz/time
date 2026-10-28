@@ -1,4 +1,4 @@
-TIMESCREEN 2.0.0
+TIMESCREEN 2.1.0
 28 styles. 60 palettes. One planet.
 
 INSTALL

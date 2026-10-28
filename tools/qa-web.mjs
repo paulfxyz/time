@@ -11,7 +11,7 @@ export async function runWebQA(page, base = 'http://127.0.0.1:3000') {
   const dialog = async tab => { await click('button-appearance'); if (tab) await click(`tab-${tab}`); };
   const close = () => click('button-close-appearance');
   await page.goto(`${base}/#scene=observatory&city=lisbon&effects=1`);
-  await page.waitForFunction(() => window.timescreen?.version === '2.0.0');
+  await page.waitForFunction(() => window.timescreen?.version === '2.1.0');
   await page.waitForFunction(() => window.timescreen.getState().ready);
   check(await page.locator('.scene-card').count() === 28, '28 scene cards');
   check(await page.locator('.theme-card').count() === 60, '60 palette choices');

@@ -1,10 +1,10 @@
-import { THEMES, PATTERNS, FINISHES, CITIES } from './themes.js?v=2.0.0';
-import { sunPosition, solarElevation, solarPhase, sunTimes, zonedParts, clamp } from './solar.js?v=2.0.0';
-import { Earth } from './earth.js?v=2.0.0';
-import { renderIcons, setIcon } from './icons.js?v=2.0.0';
-import { PICTURE_DEFAULTS, PICTURE_LIMITS, PICTURE_PRESETS, normalizePicture, pictureFilter, matchingPicturePreset } from './picture.js?v=2.0.0';
-import { SCENES, SCENE_CATEGORIES, getScene, sceneMatches, sceneSettings } from './scenes.js?v=2.0.0';
-import { Ambient } from './ambient.js?v=2.0.0';
+import { THEMES, PATTERNS, FINISHES, CITIES } from './themes.js?v=2.1.0';
+import { sunPosition, solarElevation, solarPhase, sunTimes, zonedParts, clamp } from './solar.js?v=2.1.0';
+import { Earth } from './earth.js?v=2.1.0';
+import { renderIcons, setIcon } from './icons.js?v=2.1.0';
+import { PICTURE_DEFAULTS, PICTURE_LIMITS, PICTURE_PRESETS, normalizePicture, pictureFilter, matchingPicturePreset } from './picture.js?v=2.1.0';
+import { SCENES, SCENE_CATEGORIES, getScene, sceneMatches, sceneSettings } from './scenes.js?v=2.1.0';
+import { Ambient } from './ambient.js?v=2.1.0';
 
 const $ = selector => document.querySelector(selector);
 const root = document.documentElement;
@@ -987,7 +987,7 @@ window.solstice = Object.freeze({
   getView: () => ({ longitude: earth.longitude, latitude: earth.latitude, zoom: earth.zoom, frames: earth.frameCount, radius: earth.radius }),
   getSun: () => ({ ...sunPosition() }),
 });
-window.timescreen = Object.freeze({ version:'2.0.0', sceneCount:SCENES.length, getState:window.solstice.getState });
+window.timescreen = Object.freeze({ version:'2.1.0', sceneCount:SCENES.length, getState:window.solstice.getState });
 window.addEventListener('timescreen:native-state', event => {
   if (!isNative) return;
   nativeFullscreen = Boolean(event.detail?.fullscreen);
@@ -1008,4 +1008,4 @@ window.addEventListener('timescreen:command', event => {
   };
   actions[event.detail]?.();
 });
-postNative('ready', { version:'2.0.0', setup:serializeState() });
+postNative('ready', { version:'2.1.0', setup:serializeState() });

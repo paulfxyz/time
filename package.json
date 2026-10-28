@@ -1,13 +1,16 @@
 {
   "name": "timescreen",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "private": true,
   "type": "module",
   "description": "A native macOS and web clock with 28 scene designs, 60 paired palettes, live Earth illumination, and offline support.",
   "license": "MIT",
   "author": "Paul Fleury",
   "homepage": "https://time.paulfleury.com",
-  "repository": { "type": "git", "url": "https://github.com/paulfxyz/timescreen.git" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/paulfxyz/timescreen.git"
+  },
   "scripts": {
     "start": "serve public -l 3000 --no-clipboard",
     "test": "node --test tests/*.test.mjs",

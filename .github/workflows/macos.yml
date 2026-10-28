@@ -27,7 +27,7 @@ jobs:
       - name: Test native trust boundary and resource paths
         run: |
           mkdir -p build
-          xcrun swiftc -swift-version 5 macos/Sources/NativePolicy.swift macos/Tests/NativeTests.swift -o build/native-tests
+          xcrun swiftc -swift-version 5 -framework AppKit macos/Sources/NativePolicy.swift macos/Sources/WindowPlacement.swift macos/Tests/NativeTests.swift -o build/native-tests
           build/native-tests
       - name: Compile universal native app
         run: npm run build:mac
@@ -35,17 +35,28 @@ jobs:
         run: |
           node --input-type=module -e '
             import {spawnSync} from "node:child_process";
-            const run = spawnSync("build/Timescreen.app/Contents/MacOS/Timescreen", ["--smoke-test", process.cwd()+"/build/verification"], {timeout:100000,stdio:"inherit"});
-            if (run.error) throw run.error;
-            process.exit(run.status ?? 1);'
+            import {randomUUID} from "node:crypto";
+            const suite="com.paulfleury.timescreen.qa."+randomUUID();
+            for(const mode of ["save","restore"]) {
+              const run=spawnSync("build/Timescreen.app/Contents/MacOS/Timescreen",
+                ["--smoke-test",process.cwd()+"/build/verification-"+mode,"--preferences-suite",suite,"--geometry-"+mode,
+                 "-SUEnableAutomaticChecks","NO","-SUAutomaticallyUpdate","NO"],{timeout:100000,stdio:"inherit"});
+              if(run.error) throw run.error;
+              if(run.status!==0) process.exit(run.status ?? 1);
+            }'
       - name: Create and verify drag-to-install DMG
         run: npm run build:dmg
+      - name: Sign the update archive and feed
+        if: startsWith(github.ref, 'refs/tags/v2.')
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        run: node macos/scripts/release-feed.mjs
       - name: Verify live-first startup on releases
         if: startsWith(github.ref, 'refs/tags/v2.')
         run: |
           node --input-type=module -e '
             import {spawnSync} from "node:child_process";
-            const run = spawnSync("build/Timescreen.app/Contents/MacOS/Timescreen", ["--smoke-test", process.cwd()+"/build/verification-live", "--live-site"], {timeout:100000,stdio:"inherit"});
+            const run = spawnSync("build/Timescreen.app/Contents/MacOS/Timescreen", ["--smoke-test", process.cwd()+"/build/verification-live", "--live-site","-SUEnableAutomaticChecks","NO","-SUAutomaticallyUpdate","NO"], {timeout:100000,stdio:"inherit"});
             if (run.error) throw run.error;
             process.exit(run.status ?? 1);'
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -53,10 +64,13 @@ jobs:
         with:
           name: Timescreen-macOS-universal
           path: |
-            build/Timescreen-2.0.0-macOS-universal.dmg
-            build/Timescreen-2.0.0-macOS-universal.zip
+            build/Timescreen-*-macOS-universal.dmg
+            build/Timescreen-*-macOS-universal.zip
             build/SHA256SUMS.txt
-            build/verification/
+            build/appcast.xml
+            build/update-signature.json
+            build/verification-save/
+            build/verification-restore/
             build/verification-live/
           if-no-files-found: warn
           retention-days: 30
@@ -77,10 +91,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           test "$GITHUB_REF_NAME" = "v$(node -p 'require("./package.json").version')"
+          VERSION="$(node -p 'require("./package.json").version')"
           (cd dist && sha256sum -c SHA256SUMS.txt)
           gh release create "$GITHUB_REF_NAME" \
-            dist/Timescreen-2.0.0-macOS-universal.dmg \
-            dist/Timescreen-2.0.0-macOS-universal.zip \
+            "dist/Timescreen-$VERSION-macOS-universal.dmg" \
+            "dist/Timescreen-$VERSION-macOS-universal.zip" \
             dist/SHA256SUMS.txt \
-            --title "Timescreen 2.0.0 · A native home for your spare screen" \
+            dist/appcast.xml dist/update-signature.json \
+            --title "Timescreen $VERSION · Updates, startup and window memory" \
             --notes-file RELEASE_NOTES.md --verify-tag

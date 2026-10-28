@@ -1,8 +1,8 @@
-const CACHE_NAME = 'time-2.0.0';
+const CACHE_NAME = 'time-2.1.0';
 const BASE = new URL('./', self.location).href;
 const assetURL = path => {
   const url = new URL(path, BASE);
-  if (/\.(js|css)$/.test(url.pathname)) url.searchParams.set('v', '2.0.0');
+  if (/\.(js|css)$/.test(url.pathname)) url.searchParams.set('v', '2.1.0');
   return url.href;
 };
 const SHELL = [

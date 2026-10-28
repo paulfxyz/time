@@ -2,9 +2,10 @@
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 OUT="$PWD/build"
+VERSION="$(node -p 'require("./package.json").version')"
 APP="$OUT/Timescreen.app"
 STAGE="$OUT/dmg-stage"
-IMAGE="$OUT/Timescreen-2.0.0-macOS-universal.dmg"
+IMAGE="$OUT/Timescreen-$VERSION-macOS-universal.dmg"
 test -d "$APP" || { echo "Build the app first."; exit 1; }
 mkdir -p "$STAGE/.background"
 ditto "$APP" "$STAGE/Timescreen.app"
@@ -57,5 +58,5 @@ test "$(readlink "$MOUNT/Applications")" = /Applications
 cmp "$APP/Contents/MacOS/Timescreen" "$MOUNT/Timescreen.app/Contents/MacOS/Timescreen"
 hdiutil detach "$MOUNT"
 trap - EXIT
-(cd "$OUT" && shasum -a 256 Timescreen-2.0.0-macOS-universal.dmg Timescreen-2.0.0-macOS-universal.zip > SHA256SUMS.txt)
+(cd "$OUT" && shasum -a 256 "Timescreen-$VERSION-macOS-universal.dmg" "Timescreen-$VERSION-macOS-universal.zip" > SHA256SUMS.txt)
 echo "DMG created, mounted, signature checked, and checksummed."
