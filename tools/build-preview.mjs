@@ -11,7 +11,9 @@ const path = resolve(target, 'app.js');
 let app = await readFile(path, 'utf8');
 app = 'const previewMemory = new Map();\n' + app;
 app = app.replaceAll("localStorage.getItem('timescreen:setup:v2')", "previewMemory.get('setup')")
-  .replaceAll("localStorage.setItem('timescreen:setup:v2', serializeState())", "previewMemory.set('setup', serializeState())");
+  .replaceAll("localStorage.setItem('timescreen:setup:v2', serializeState())", "previewMemory.set('setup', serializeState())")
+  .replaceAll("localStorage.getItem('timescreen:welcome:v1')", "previewMemory.get('welcome')")
+  .replaceAll("localStorage.setItem('timescreen:welcome:v1', '1')", "previewMemory.set('welcome', '1')");
 const start = app.indexOf('async function toggleFullscreen()');
 const end = app.indexOf('function syncFullscreenControl()', start);
 if (start < 0 || end < 0) throw new Error('Preview transform requires review after fullscreen changes.');
@@ -29,6 +31,7 @@ await writeFile(path, app);
 const htmlPath = resolve(target, 'index.html');
 let html = await readFile(htmlPath, 'utf8');
 html = html.replace('<title>Time', '<title>Timescreen preview');
+html = html.replace('Shown once per browser.', 'Shown on each preview reload.');
 html = html.replace('A native window, menu-bar access, remembered settings and a complete offline copy.',
   'This embedded preview uses temporary settings and focus mode. The live site and Mac app provide the full experience.');
 await writeFile(htmlPath, html);

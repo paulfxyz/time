@@ -559,6 +559,11 @@ function openDialog(id) {
   }
 }
 
+function hasSeenWelcome() {
+  try { return localStorage.getItem('timescreen:welcome:v1') === '1'; }
+  catch { return false; }
+}
+
 function setQuiet(value) {
   quiet = value;
   document.body.classList.toggle('quiet', quiet);
@@ -826,6 +831,14 @@ document.querySelectorAll('dialog').forEach(dialog => {
     if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) dialog.close();
   });
 });
+$('#welcome-dialog').addEventListener('close', () => {
+  try { localStorage.setItem('timescreen:welcome:v1', '1'); } catch {}
+  $('#main').focus({ preventScroll: true });
+});
+$('#about-button').addEventListener('click', () => {
+  $('#appearance-dialog').close();
+  openDialog('welcome-dialog');
+});
 $('#city-search').addEventListener('input', () => {
   const query = normalized($('#city-search').value.trim());
   let found = 0;
@@ -1009,3 +1022,5 @@ window.addEventListener('timescreen:command', event => {
   actions[event.detail]?.();
 });
 postNative('ready', { version:'2.1.0', setup:serializeState() });
+// The download introduction belongs to the website, not an unattended native clock.
+if (!isNative && !hasSeenWelcome()) openDialog('welcome-dialog');

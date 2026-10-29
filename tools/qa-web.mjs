@@ -13,6 +13,7 @@ export async function runWebQA(page, base = 'http://127.0.0.1:3000') {
   await page.goto(`${base}/#scene=observatory&city=lisbon&effects=1`);
   await page.waitForFunction(() => window.timescreen?.version === '2.1.0');
   await page.waitForFunction(() => window.timescreen.getState().ready);
+  if (await page.getByTestId('dialog-welcome').isVisible()) await click('button-welcome-continue');
   check(await page.locator('.scene-card').count() === 28, '28 scene cards');
   check(await page.locator('.theme-card').count() === 60, '60 palette choices');
   await dialog('styles');

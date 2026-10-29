@@ -1,5 +1,13 @@
 # Changelog
 
+## Web refresh · 2026-10-29
+
+- Added centered, floating Github and MacOS links without changing the clock layout.
+- Added a dismissible first-visit welcome with README/release links and clear ad-hoc signing, Apple notarization and first-launch security guidance.
+- Remembered dismissal per browser and added Appearance → Display → About & installation to reopen the welcome; native launches remain uninterrupted.
+- Adapted the header and scrollable modal for narrow screens, retained quiet-mode behavior, and refreshed the offline cache.
+- This is a website-only refresh. The published macOS installer remains version 2.1.0.
+
 ## 2.1.0 · 2026-10-28
 
 - Replaced the browser-only update link with a native Sparkle update window, available in the application menu, menu-bar launcher and Settings.

@@ -29,12 +29,14 @@ test('manifest supports home-screen fullscreen, including a standalone fallback'
   assert.ok(manifest.display_override.includes('standalone'));
   assert.ok(manifest.icons.some(icon => icon.purpose === 'maskable'));
 });
-test('header contains only the two left controls and fullscreen on the right', () => {
+test('header preserves the two left controls and fullscreen alongside centered resource links', () => {
   const html = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
   const header = html.match(/<header[\s\S]*?<\/header>/)[0];
   assert.equal((header.match(/<button /g)||[]).length, 3);
   assert.ok(header.includes('id="light-button"'));
   assert.ok(header.includes('id="appearance-button"'));
   assert.ok(header.includes('id="fullscreen-button"'));
+  assert.equal((header.match(/<a /g)||[]).length, 2);
+  assert.ok(header.includes('class="resource-links"'));
   assert.ok(!header.includes('brand') && !header.includes('SOLSTICE'));
 });

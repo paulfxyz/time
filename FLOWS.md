@@ -1,5 +1,16 @@
 # Timescreen 2 acceptance inventory
 
+## Web welcome and project links
+- Header middle shows subtle Github and MacOS links; each opens the official repository or latest release in a new tab.
+- Fresh browser arrival opens a centered welcome explaining the README and the Mac app's ad-hoc signing / lack of Apple notarization.
+- Close, Continue, Escape and backdrop dismiss it; reload and later visits do not repeat it in the same browser.
+- Appearance → Display → About & installation can reopen the information without clearing clock settings.
+- Native app launches do not show a download welcome over an unattended clock.
+- Check desktop, 375px, 320px, light/dark and short-window layouts: no header overlap, modal content scrolls, close and continue remain reachable.
+- Keyboard focus stays inside the modal while open; existing shortcuts do not change the clock behind it.
+- Blocked browser storage must not crash the page; the limited embedded preview uses temporary memory.
+- Replay existing browser interaction QA, then check welcome, both outbound links, dismissal and one clock flow on production.
+
 ## Existing display
 - Open the live baseline at https://time.paulfleury.com before editing.
 - Clock, seconds, date, UTC offset, sunrise/sunset, Earth and four world clocks render.

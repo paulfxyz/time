@@ -1,5 +1,16 @@
 # Timescreen QA inventory
 
+## Website welcome refresh · 29 October 2026
+
+- **Automated checks:** all 28 Node tests pass, including canonical welcome/header links, signing language, native-launch exclusion and preview storage handling.
+- **Regression coverage:** all 47 existing browser interaction checks pass, including styles, colours, city search, picture settings, setup persistence, keyboard controls and fullscreen.
+- **Welcome behavior:** a fresh browser shows the modal; Continue, Close, Escape and backdrop dismiss it. Its native close event saves a separate browser marker, reload does not repeat it, and About & installation reopens it.
+- **Real navigation:** the two header links and the three modal links were clicked and opened the official GitHub destinations in separate tabs.
+- **Responsive inspection:** centered header controls do not overlap at 1440px, 375px or 320px. Dark and light mobile modals were visually reviewed after their opening animations; their body scrolls while the dismiss controls stay reachable. Continue remains in view in a 960×360 landscape window.
+- **Recovery and boundaries:** quiet mode hides and disables header links, Escape restores them, blocked storage does not crash the display, and a native-host bridge fixture suppresses automatic onboarding. No application page errors were observed.
+
+The embedded preview deliberately uses temporary memory and labels its welcome as appearing on each preview reload. Production remembers dismissal locally; clearing or blocking browser storage can make it appear again. This refresh does not replace or re-release the 2.1.0 native installer.
+
 ## Version 2.1.0
 
 The update/startup/window release adds native verification without changing the 28 clock styles. It was checked on 28 October 2026 with the following results.
