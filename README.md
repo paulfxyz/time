@@ -86,7 +86,7 @@ The gallery combines search and category filters, provides a one-click shuffle, 
 
 ## Still a very good clock
 
-- **Easy to explore:** subtle Github and MacOS header links lead to the README and latest release. A first-visit welcome explains the project and the Mac build's signing status; reopen it under Appearance → Display → About & installation.
+- **Easy to explore:** desktop Github and MacOS header links lead to the README and latest release. On mobile, a bottom-right **More** button opens a compact sheet instead, keeping the header uncluttered. The first-visit welcome includes the Mac signing notice and expandable installation help; reopen it with More or Appearance → Display → About & installation.
 - **A real-time Earth:** calculated sunlight, an accurate day/night boundary, optional night lights, and city labels.
 - **IANA time zones:** city search, device-zone detection, daylight-saving-aware clocks, four world clocks, and sunrise/sunset estimates.
 - **Room-friendly controls:** 12/24-hour time, optional seconds, quiet mode, eight background patterns and six Earth finishes.

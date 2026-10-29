@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#080d13">
   <meta name="description" content="Timescreen for Mac and the web. 28 expressive clock styles, 60 colour palettes, a living Earth, and a quieter spare screen.">
   <meta name="timescreen-version" content="2.1.0">
-  <meta name="timescreen-web-revision" content="welcome-1">
+  <meta name="timescreen-web-revision" content="mobile-2">
   <meta property="og:title" content="Timescreen · Make time look different">
   <meta property="og:description" content="28 clock styles. 60 colour palettes. One planet. A native Mac app and a fullscreen web experience.">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -85,6 +85,7 @@
         <div class="status-left"><span class="live-dot"></span><span>LIVE SUNLIGHT</span><span class="status-dot">·</span><span id="solar-coordinates" title="The point on Earth directly beneath the Sun" data-testid="text-subsolar"></span></div>
         <button id="scene-current" class="quiet-button scene-current" title="Choose a style (T)" data-testid="button-current-scene"><span class="scene-swatch" aria-hidden="true"></span><span id="current-scene-name">Observatory</span><span data-icon="chevron-down"></span></button>
         <button id="focus-button" class="quiet-button" title="Hide interface (H)" data-testid="button-focus"><span data-icon="scan"></span><span>Quiet mode</span><kbd>H</kbd></button>
+        <button id="resources-button" class="quiet-button resource-menu-trigger" title="GitHub, Mac app and installation" aria-haspopup="dialog" aria-controls="welcome-dialog" data-testid="button-resources">More <span data-icon="chevron-down"></span></button>
       </div>
     </footer>
     </div>
@@ -94,27 +95,23 @@
   <p id="notice" class="notice" role="status" aria-live="polite"></p>
 
   <dialog id="welcome-dialog" class="welcome-dialog" aria-labelledby="welcome-title" aria-describedby="welcome-intro" data-testid="dialog-welcome">
-    <div class="dialog-heading"><div><span class="eyebrow">A SPARE SCREEN, PUT TO GOOD USE</span><h2 id="welcome-title">A little context. Then just time.</h2></div><button class="icon-button close-dialog" aria-label="Close welcome" title="Close welcome" autofocus data-testid="button-close-welcome"><span data-icon="x"></span></button></div>
+    <div class="dialog-heading"><h2 id="welcome-title">Timescreen</h2><button class="icon-button close-dialog" aria-label="Close welcome" title="Close welcome" autofocus data-testid="button-close-welcome"><span data-icon="x"></span></button></div>
     <div class="welcome-body">
-      <p id="welcome-intro">A living clock for your browser or your Mac. Pick an atmosphere, go full screen, and make yourself at home.</p>
-      <section class="welcome-section">
-        <h3>Open source on GitHub</h3>
-        <p>The README covers all 28 styles, display controls, keyboard shortcuts and building your own version.</p>
-        <a class="welcome-link" href="https://github.com/paulfxyz/timescreen#readme" target="_blank" rel="noopener noreferrer" data-testid="link-welcome-readme">Read the README <span data-icon="arrow-up-right"></span></a>
-      </section>
-      <section class="welcome-section">
-        <h3>A native home on macOS</h3>
-        <p>Fullscreen, an offline copy, updates and optional launch at login. One download for Apple silicon and Intel, on macOS 13 or newer.</p>
-        <a class="welcome-link" href="https://github.com/paulfxyz/timescreen/releases/latest" target="_blank" rel="noopener noreferrer" data-testid="link-welcome-macos">View the macOS release <span data-icon="arrow-up-right"></span></a>
-        <div class="welcome-security">
-          <h4>Before you install: not Apple-signed</h4>
-          <p>The release is ad-hoc signed, but has no Apple Developer ID signature or Apple notarization. macOS may block its first launch.</p>
+      <p id="welcome-intro">Explore the code, or give the clock a home on your Mac.</p>
+      <nav class="welcome-destinations" aria-label="Project and download">
+        <a class="welcome-destination" href="https://github.com/paulfxyz/timescreen#readme" target="_blank" rel="noopener noreferrer" data-testid="link-welcome-readme"><span><strong>GitHub</strong><small>README, source code &amp; setup</small></span><span data-icon="arrow-up-right"></span></a>
+        <a class="welcome-destination" href="https://github.com/paulfxyz/timescreen/releases/latest" target="_blank" rel="noopener noreferrer" data-testid="link-welcome-macos"><span><strong>Get the Mac app</strong><small>macOS 13+ · Apple silicon &amp; Intel</small></span><span data-icon="arrow-up-right"></span></a>
+      </nav>
+      <div class="welcome-security">
+        <p><strong>Not Apple-signed or notarized.</strong><br>Ad-hoc signed only. macOS may block the first launch.</p>
+        <details id="welcome-install" class="welcome-install">
+          <summary>Mac installation help <span data-icon="chevron-down"></span></summary>
           <p>Only if you trust the official download, try opening it, then use <strong>System Settings → Privacy &amp; Security → Open Anyway</strong>. Never disable Gatekeeper.</p>
-          <a class="welcome-link" href="https://github.com/paulfxyz/timescreen/blob/main/INSTALL.md#first-launch-security" target="_blank" rel="noopener noreferrer" data-testid="link-welcome-install">Installation &amp; security guide <span data-icon="arrow-up-right"></span></a>
-        </div>
-      </section>
+          <a class="welcome-link" href="https://github.com/paulfxyz/timescreen/blob/main/INSTALL.md#first-launch-security" target="_blank" rel="noopener noreferrer" data-testid="link-welcome-install">Full installation guide <span data-icon="arrow-up-right"></span></a>
+        </details>
+      </div>
     </div>
-    <div class="welcome-footer"><span class="welcome-once">Shown once per browser.</span><button class="solid-button close-dialog" data-testid="button-welcome-continue">Let’s see the time <span data-icon="arrow-up-right"></span></button></div>
+    <div class="welcome-footer"><span class="welcome-once">Shown once per browser.</span><button class="solid-button close-dialog" data-testid="button-welcome-continue">Back to the clock</button></div>
   </dialog>
 
   <dialog id="light-dialog" class="light-dialog" aria-labelledby="light-title" data-testid="dialog-light">

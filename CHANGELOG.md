@@ -1,5 +1,13 @@
 # Changelog
 
+## Mobile navigation refinement · 2026-10-29
+
+- Removed the GitHub/Mac link pill from narrow headers and restored readable Light and Appearance labels.
+- Added a bottom-right More button that opens a compact, bottom-aligned sheet with large README and Mac download rows.
+- Shortened the welcome, kept the signing warning visible, and placed detailed Mac instructions in an expandable section.
+- Reopening the sheet resets expanded help and returns keyboard focus to its trigger on dismissal.
+- Preserved desktop header links, remembered dismissal and the existing 2.1.0 Mac installer.
+
 ## Web refresh · 2026-10-29
 
 - Added centered, floating Github and MacOS links without changing the clock layout.

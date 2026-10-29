@@ -1,8 +1,12 @@
 # Timescreen 2 acceptance inventory
 
 ## Web welcome and project links
-- Header middle shows subtle Github and MacOS links; each opens the official repository or latest release in a new tab.
-- Fresh browser arrival opens a centered welcome explaining the README and the Mac app's ad-hoc signing / lack of Apple notarization.
+- Desktop keeps centered Github and MacOS links; mobile removes them from the header and restores labeled Light and Appearance controls.
+- Mobile's bottom-right More button opens a compact sheet with GitHub README and macOS download rows; no persistent panel obscures the clock.
+- Fresh browser arrival opens the same compact welcome, centered on desktop and bottom-aligned on mobile, with the Mac signing warning visible.
+- Installation details expand only when requested; close and reopen the sheet to reset the expanded help.
+- Check 320px, 375px and 390px: readable header labels, no overlapping footer controls, both destination rows and signing warning visible without scrolling the initial sheet.
+- More, Close, Escape and backdrop work; keyboard focus returns to More after manual use. Desktop/mobile resizing switches navigation without duplicate visible links.
 - Close, Continue, Escape and backdrop dismiss it; reload and later visits do not repeat it in the same browser.
 - Appearance → Display → About & installation can reopen the information without clearing clock settings.
 - Native app launches do not show a download welcome over an unattended clock.

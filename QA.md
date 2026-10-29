@@ -1,5 +1,12 @@
 # Timescreen QA inventory
 
+## Mobile navigation refinement · 29 October 2026
+
+- **Visual review:** inspected the unobstructed 375px clock plus the compact sheet at 375px and 320px, in dark and light modes. The old centered mobile header pill is gone; Light and Appearance retain their text.
+- **Mobile checks:** 40 focused checks pass across 320×568, 375×812, 390×844 and 768×1024. Header/footer controls do not collide, both destination rows and the signing warning fit the initially opened sheet without scrolling, and detailed installation help expands on request.
+- **Interaction:** real touch taps open More, follow both official GitHub destinations in new tabs, expand the guide, dismiss via backdrop or buttons, reset expanded help on reopening and restore focus. Quiet mode disables More through the existing inert chrome wrapper.
+- **Compatibility:** desktop keeps its header links without a duplicate More button; first-visit dismissal is still remembered. All 29 Node tests and all 47 existing browser regression checks pass, with no application page errors.
+
 ## Website welcome refresh · 29 October 2026
 
 - **Automated checks:** all 28 Node tests pass, including canonical welcome/header links, signing language, native-launch exclusion and preview storage handling.

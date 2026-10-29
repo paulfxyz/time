@@ -38,6 +38,7 @@ let lastSecond = '';
 let lastModeManual = Boolean(new URLSearchParams(location.hash.slice(1) || storedSetup()).get('mode'));
 let sceneCategory = 'All';
 let nativeFullscreen = false;
+let welcomeReturnFocus = null;
 const isNative = Boolean(window.timescreenNative?.available);
 const postNative = (command, value) => {
   if (!isNative) return false;
@@ -550,6 +551,11 @@ function normalized(text) { return text.toLowerCase().normalize('NFD').replace(/
 
 function openDialog(id) {
   const dialog = $(`#${id}`);
+  if (id === 'welcome-dialog' && !dialog.open) {
+    welcomeReturnFocus = document.activeElement;
+    $('#welcome-install').open = false;
+    $('.welcome-body').scrollTop = 0;
+  }
   if (!dialog.open) dialog.showModal();
   if (id === 'city-dialog') {
     $('#city-search').value = '';
@@ -833,8 +839,11 @@ document.querySelectorAll('dialog').forEach(dialog => {
 });
 $('#welcome-dialog').addEventListener('close', () => {
   try { localStorage.setItem('timescreen:welcome:v1', '1'); } catch {}
-  $('#main').focus({ preventScroll: true });
+  const target = welcomeReturnFocus?.matches('button, a, [tabindex]') && welcomeReturnFocus.getClientRects().length
+    ? welcomeReturnFocus : $('#main');
+  target.focus({ preventScroll: true });
 });
+$('#resources-button').addEventListener('click', () => openDialog('welcome-dialog'));
 $('#about-button').addEventListener('click', () => {
   $('#appearance-dialog').close();
   openDialog('welcome-dialog');

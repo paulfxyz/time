@@ -1,4 +1,4 @@
-const CACHE_NAME = 'time-2.1.0-welcome-1';
+const CACHE_NAME = 'time-2.1.0-mobile-2';
 const BASE = new URL('./', self.location).href;
 const assetURL = path => {
   const url = new URL(path, BASE);

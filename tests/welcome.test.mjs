@@ -14,7 +14,8 @@ test('welcome and header point to official source, releases and installation hel
     assert.match(anchor, /rel="noopener noreferrer"/);
   }
   assert.match(html, /aria-labelledby="welcome-title" aria-describedby="welcome-intro"/);
-  assert.match(html, /ad-hoc signed, but has no Apple Developer ID signature or Apple notarization/);
+  assert.match(html, /Not Apple-signed or notarized/);
+  assert.match(html, /Ad-hoc signed only/);
   assert.match(html, /Never disable Gatekeeper/);
 });
 
@@ -26,5 +27,15 @@ test('welcome is separate from clock settings, dismissible and not automatic in 
   assert.match(app, /'#welcome-dialog'\)\.addEventListener\('close'/);
   assert.match(app, /'#about-button'\)\.addEventListener\('click'/);
   assert.match(read('tools/build-preview.mjs'), /previewMemory\.get\('welcome'\)/);
-  assert.match(read('public/sw.js'), /time-2\.1\.0-welcome-1/);
+  assert.match(read('public/sw.js'), /time-2\.1\.0-mobile-2/);
+});
+
+test('mobile resources use a footer dialog trigger and progressively disclosed installation help', () => {
+  const html = read('public/index.html');
+  const footer = html.match(/<footer[\s\S]*?<\/footer>/)[0];
+  assert.match(footer, /id="resources-button"/);
+  assert.match(footer, /aria-controls="welcome-dialog"/);
+  assert.match(html, /<details id="welcome-install"/);
+  assert.match(read('public/app.js'), /'#resources-button'\)\.addEventListener\('click'/);
+  assert.match(read('public/style.css'), /\.resource-links \{ display: none; \}/);
 });
